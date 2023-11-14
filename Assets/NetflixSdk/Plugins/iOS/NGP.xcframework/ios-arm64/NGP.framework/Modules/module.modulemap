@@ -1,0 +1,10 @@
+
+framework module NGP {
+    umbrella header "NGP.h"
+    export *
+}
+
+module NGP.Swift {
+  header "NGP-Swift.h"
+  requires objc
+}

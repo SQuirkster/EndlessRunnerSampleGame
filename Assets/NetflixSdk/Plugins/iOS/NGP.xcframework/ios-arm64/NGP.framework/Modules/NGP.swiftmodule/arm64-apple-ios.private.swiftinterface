@@ -1,0 +1,820 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.8.1 (swiftlang-5.8.0.124.5 clang-1403.0.22.11.100)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name NGP
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+import Combine
+import Foundation
+@_exported import NGP
+import SafariServices
+import StoreKit
+import Swift
+import SwiftUI
+import UIKit
+import WebKit
+import _Concurrency
+import _StringProcessing
+import os.log
+import os
+@_hasMissingDesignatedInitializers @objc(NGPCloudSaveService) public class CloudSaveService : ObjectiveC.NSObject {
+  @objc public static let shared: NGP.CloudSaveService
+  @objc public func progressSlot(slotId: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func saveSlot(slotId: Swift.String, snapshotId: Swift.String?, data: Foundation.Data, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func deleteSlot(slotId: Swift.String, snapshotId: Swift.String?, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func progressSlots(callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc deinit
+}
+@objc(NewGameStart) @objcMembers public class NewGameStart : NGP.InGameEvent {
+  @objc public init()
+  @objc deinit
+}
+@objc(FirstTimeUserExperienceStart) @objcMembers public class FirstTimeUserExperienceStart : NGP.InGameEvent {
+  @objc public init()
+  @objc deinit
+}
+@objc(FirstTimeUserExperienceComplete) @objcMembers public class FirstTimeUserExperienceComplete : NGP.InGameEvent {
+  @objc public init()
+  @objc deinit
+}
+@objc(FirstTimeUserExperienceStepComplete) @objcMembers public class FirstTimeUserExperienceStepComplete : NGP.InGameEvent {
+  @objc public init(stepNumber: Foundation.Decimal, stepName: Swift.String, stepDesc: Swift.String = "")
+  override open func encode(to encoder: any Swift.Encoder) throws
+  @objc deinit
+}
+@objc(ProgressCheckpointComplete) @objcMembers public class ProgressCheckpointComplete : NGP.InGameEvent {
+  @objc public init(checkpointNumber: Foundation.Decimal, checkpointName: Swift.String, checkpointType: Swift.String, checkpointDesc: Swift.String = "")
+  override open func encode(to encoder: any Swift.Encoder) throws
+  @objc deinit
+}
+@objc(Custom) @objcMembers public class Custom : NGP.InGameEvent {
+  @objc override public init(name: Swift.String, data: Swift.String)
+  @objc override open func toJSON() throws -> Swift.String
+  @objc deinit
+}
+@objc(GameComplete) @objcMembers public class GameComplete : NGP.InGameEvent {
+  @objc public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPLeaderboardsBridgeFormatter) public class LeaderboardsBridgeFormatter : ObjectiveC.NSObject {
+  @objc public func bridgeRepresentation(entryResult: NGP.LeaderboardEntryResult) -> Swift.String
+  @objc public func bridgeRepresentation(infoResult: NGP.LeaderboardInfoResult) -> Swift.String
+  @objc public func bridgeRepresentation(entriesResult: NGP.LeaderboardEntriesResult) -> Swift.String
+  @objc override dynamic public init()
+  @objc deinit
+}
+public enum StoreError : Swift.Error {
+  case missingItunesIdentifier
+  case failedVerification
+  case userCanceled
+  case purchasePending
+  case unknownFailure
+  case missingProduct
+  case badAccountToken
+  public static func == (a: NGP.StoreError, b: NGP.StoreError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@objc(NGPInAppPurchaseManagerProtocol) public protocol InAppPurchaseManagerProtocol {
+  @objc func itunesIdentifier() -> Swift.String?
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func requestProducts(productIds: [Swift.String]) async throws -> [[Swift.String : Any]]
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func purchase(productId: Swift.String, accountToken: Swift.String) async throws -> [Swift.String : Any]
+  #endif
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @available(iOS 15, *)
+@objc(NGPInAppPurchaseManager) public class InAppPurchaseManager : ObjectiveC.NSObject, NGP.InAppPurchaseManagerProtocol {
+  @objc public static let sharedInstance: NGP.InAppPurchaseManager
+  @objc deinit
+  @objc public func itunesIdentifier() -> Swift.String?
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc public func requestProducts(productIds: [Swift.String]) async throws -> [[Swift.String : Any]]
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc public func purchase(productId: Swift.String, accountToken: Swift.String) async throws -> [Swift.String : Any]
+  #endif
+}
+@objc(NetflixLeaderboards) public protocol Leaderboards {
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func topEntriesOnLeaderboard(named: Swift.String, maxEntries: Swift.Int) async -> NGP.LeaderboardEntriesResult
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func moreEntriesOnLeaderboard(named: Swift.String, maxEntries: Swift.Int, cursor: Swift.String, direction: NGP.FetchDirection) async -> NGP.LeaderboardEntriesResult
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func entriesAroundCurentPlayerOnLeaderboard(named: Swift.String, maxEntries: Swift.Int) async -> NGP.LeaderboardEntriesResult
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func currentplayerEntryOnLeaderboard(named: Swift.String) async -> NGP.LeaderboardEntryResult
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func infoForLeaderboard(named: Swift.String) async -> NGP.LeaderboardInfoResult
+  #endif
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(NGPCrashReporter) public class CrashReporter : ObjectiveC.NSObject {
+  @objc public static let shared: NGP.CrashReporter
+  @objc public func start()
+  @objc public func start(inUnity: Swift.Bool)
+  @objc public func reset()
+  @objc public func updateProfile()
+  @objc(logHandledException:) public func logHandled(exception: Foundation.NSException)
+  @objc public func logHandled(error: any Swift.Error)
+  @objc(leaveBreadcrumb:) public func leaveBreadcrumb(message: Swift.String)
+  @objc deinit
+}
+@objc public protocol ServiceProtocol {
+}
+@objcMembers @objc(NGPApolloAccountService) public class ApolloAccountService : ObjectiveC.NSObject, NGP.ServiceProtocol {
+  @objc public var accountService: NGP.ApolloAccountService {
+    @objc get
+  }
+  @objc public init(loggerProvider: NGP.LoggerProvider)
+  @objc public func fetchSDKConfigAndLoginConfig(_ itunesIdentifier: Swift.String, preferredLanguageCode: Swift.String, withCallback callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func fetchSDKConfig(withCallback callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func login(withAuthData authData: NGP.LoginAuthenticationData, loginFlowKey: Swift.String, userIdForLogin: Swift.String, preferredLanguageCode: Swift.String, usingCallback callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func login(withSsoToken ssoToken: Swift.String, userIdForLogin: Swift.String, preferredLanguageCode: Swift.String, withCallback callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func logoutJustThisApp(withDeviceToken deviceToken: Swift.String, currentProfileGUID: Swift.String, callback: @escaping ([Swift.AnyHashable : Any]?, (any Swift.Error)?) -> Swift.Void)
+  @objc public func checkAccess(withOfflineToken offlineToken: Swift.String, gamerAccessToken: Swift.String, preferredLanguageCode: Swift.String, currentProfileGUID: Swift.String, withCallback callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func switchProfiles(withTarget target: Swift.String, pin: Swift.String, preferredLanguageCode: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func refreshAccount(_ accountOwnerGUID: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func refreshSSOToken(_ ssoToken: Swift.String?, accountOwnerGUID: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func updateWebUrls(_ currentProfileGUID: Swift.String, preferredLanguageCode: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func _updateNotificationSettings(withRequests requests: [ObjectiveC.NSObject], currentProfileGUID: Swift.String)
+  @objc public func syntheticAllocate(callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func requestCreateAccount(withItunesIdentifier itunesIdentifier: Swift.String, preferredLanguageCode: Swift.String, accountOwnerGUID: Swift.String?, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func createAccount(withFlowKey flowKey: Swift.String, data: NGP.CreateAccountAuthenticationData, preferredLanguageCode: Swift.String, signupOwnerGuid: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func continueFromReturningAccount(withFlowKey flowKey: Swift.String, preferredLanguageCode: Swift.String, signupOwnerGuid: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func requestPreviousAuthentication(withFlowKey flowKey: Swift.String, preferredLanguageCode: Swift.String, signupOwnerGuid: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func startMembership(_ data: NGP.OrderConfirmAuthenticationData, purchaseDetails result: [Swift.AnyHashable : Any], receipt: Foundation.Data, fowKey flowKey: Swift.String, preferredLanguageCode: Swift.String, signupOwnerGuid: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func signupCurrentState(withFlowKey flowKey: Swift.String, preferredLanguageCode: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func claimPublicIdentity(withHandle handle: Swift.String, currentProfileGUID: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc public func checkHandleAvailability(_ handle: Swift.String, currentProfileGUID: Swift.String, callback: @escaping ([Swift.AnyHashable : Any], (any Swift.Error)?) -> Swift.Void)
+  @objc deinit
+}
+@objc(NetflixPlayer) public protocol Player {
+  @objc var ID: Swift.String { get }
+  @objc var handle: Swift.String? { get }
+}
+@objc(NetflixAccountPlayer) public protocol AccountPlayer : NGP.Player {
+  @objc var gamerProfileID: Swift.String { get }
+}
+@objc(NetflixCurrentPlayer) public protocol CurrentPlayer : NGP.AccountPlayer {
+  @objc var languagePreferences: any NGP.LanguagePreferences { get }
+  @objc var netflixAccessToken: Swift.String { get }
+}
+@objc(NetflixLanguagePreferences) public protocol LanguagePreferences {
+  @objc var preferred: any NGP.Language { get }
+}
+@objc(NetflixLanguage) public protocol Language {
+  @objc var code: Swift.String { get }
+}
+@objc(NetflixPlayers) public protocol Players {
+  @objc var currentPlayer: (any NGP.CurrentPlayer)? { get }
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc func players(for IDs: [Swift.String]) async -> NGP.PlayersResult
+  #endif
+}
+@_hasMissingDesignatedInitializers @objc(NetflixPlayersResult) @objcMembers final public class PlayersResult : ObjectiveC.NSObject {
+  @objc(NetflixPlayersResultStatus) public enum Status : Swift.Int {
+    case success = 0
+    case unknownError = 1000
+    case limitExceeded = 1002
+    case networkError = 1003
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc final public let players: [Swift.String : NGP.PlayerResult]?
+  @objc final public let status: NGP.PlayersResult.Status
+  @objc final public let message: Swift.String?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixPlayerResult) @objcMembers public class PlayerResult : ObjectiveC.NSObject {
+  @objc(NetflixPlayerResultStatus) public enum Status : Swift.Int {
+    case success
+    case notFound
+    case unavailable
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc final public let player: (any NGP.Player)?
+  @objc final public let status: NGP.PlayerResult.Status
+  @objc deinit
+}
+@objc @_hasMissingDesignatedInitializers @_Concurrency.MainActor(unsafe) public class _AuthenticationContentViewController : UIKit.UIViewController {
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public var childForStatusBarStyle: UIKit.UIViewController? {
+    @objc get
+  }
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public var childForStatusBarHidden: UIKit.UIViewController? {
+    @objc get
+  }
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public var childForHomeIndicatorAutoHidden: UIKit.UIViewController? {
+    @objc get
+  }
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public var preferredInterfaceOrientationForPresentation: UIKit.UIInterfaceOrientation {
+    @objc get
+  }
+  @objc @_Concurrency.MainActor(unsafe) final public let contentViewController: UIKit.UIViewController
+  @objc @_Concurrency.MainActor(unsafe) final public let headerView: UIKit.UIView?
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public var additionalSafeAreaInsets: UIKit.UIEdgeInsets {
+    @objc get
+    @objc set
+  }
+  @objc @_Concurrency.MainActor(unsafe) required public init(contentViewController: UIKit.UIViewController, headerView: UIKit.UIView? = nil)
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public func viewDidLoad()
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public func viewDidLayoutSubviews()
+  @_Concurrency.MainActor(unsafe) @objc override dynamic public func preferredContentSizeDidChange(forChildContentContainer container: any UIKit.UIContentContainer)
+  @objc deinit
+}
+@objc extension Foundation.Thread {
+  @objc dynamic public class var isTesting: Swift.Bool {
+    @objc get
+  }
+}
+@_inheritsConvenienceInitializers @objc public class NGPAchievementsInitializer : ObjectiveC.NSObject {
+  @objc public static func initAchievements()
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(NGPCorporateInfo) public class CorporateInfo : ObjectiveC.NSObject {
+  @objc(NGPCorporateInfoLink) public class Link : ObjectiveC.NSObject {
+    final public let title: Swift.String
+    final public let url: Swift.String
+    @objc public init(title: Swift.String, url: Swift.String)
+    @objc deinit
+  }
+  @objc final public let ctaButton: Swift.String
+  @objc final public let title: Swift.String
+  @objc final public let content: [Swift.String]
+  @objc final public let footer: [Swift.String]
+  @objc final public let links: [NGP.CorporateInfo.Link]
+  @objc public init(ctaButton: Swift.String, title: Swift.String, content: [Swift.String], footer: [Swift.String], links: [NGP.CorporateInfo.Link])
+  @objc deinit
+}
+extension NGP.OverlayDelegate {
+  @objc dynamic public func _registerForApplicationLifeCycleEvents()
+}
+@objc(NGPAuthenticationConsent) public class AuthenticationConsent : ObjectiveC.NSObject {
+  @objc final public let consentKey: Swift.String
+  final public let isRequired: Swift.Bool
+  final public let label: Swift.String
+  @objc public var isChecked: Swift.Bool
+  @objc public init(consentKey: Swift.String, isRequired: Swift.Bool, label: Swift.String, isChecked: Swift.Bool)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPLeaderboard) public class Leaderboard : ObjectiveC.NSObject {
+  @objc convenience public init(apolloClientProvider: NGP.ApolloClientProvider)
+  @objc public func getTopEntries(guid: Swift.String, leaderboardName: Swift.String?, maxEntries: Swift.Int, _ callback: @escaping (NGP.LeaderboardEntriesResult) -> Swift.Void)
+  @objc public func getMoreEntries(guid: Swift.String, leaderboardName: Swift.String?, maxEntries: Swift.Int, cursor: Swift.String?, direction: NGP.FetchDirection, callback: @escaping (NGP.LeaderboardEntriesResult) -> Swift.Void)
+  @objc public func getPlayerSurroundingEntries(guid: Swift.String, leaderboardName: Swift.String?, maxEntries: Swift.Int, _ callback: @escaping (NGP.LeaderboardEntriesResult) -> Swift.Void)
+  @objc public func getCurrentPlayerEntry(guid: Swift.String, leaderboardName: Swift.String?, _ callback: @escaping (NGP.LeaderboardEntryResult) -> Swift.Void)
+  @objc public func getLeaderboardInfo(guid: Swift.String, leaderboardName: Swift.String?, _ callback: @escaping (NGP.LeaderboardInfoResult) -> Swift.Void)
+  @objc deinit
+}
+final public class ActorQueue<ActorType> : @unchecked Swift.Sendable where ActorType : _Concurrency.Actor {
+  public init()
+  @objc deinit
+  final public func adoptExecutionContext(of actor: ActorType)
+  #if compiler(>=5.3) && $AsyncAwait && $Sendable
+  final public func enqueue(_ task: @escaping @Sendable (isolated ActorType) async -> Swift.Void)
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait && $Sendable
+  final public func enqueueAndWait<T>(_ task: @escaping @Sendable (isolated ActorType) async -> T) async -> T where T : Swift.Sendable
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait && $Sendable
+  final public func enqueueAndWait<T>(_ task: @escaping @Sendable (isolated ActorType) async throws -> T) async throws -> T where T : Swift.Sendable
+  #endif
+}
+@_hasMissingDesignatedInitializers @objc(NGPApolloClientProvider) final public class ApolloClientProvider : ObjectiveC.NSObject {
+  @objc public static let shared: NGP.ApolloClientProvider
+  @objc final public func reset()
+  @objc deinit
+}
+@objc(NGPRemoteConfigManagerProtocol) public protocol RemoteConfigManagerProtocol {
+  @objc var config: NGP.RemoteConfig { get }
+  @objc func updateConfig(config: [Swift.String : Any])
+}
+@_hasMissingDesignatedInitializers @objc public class RemoteConfig : ObjectiveC.NSObject {
+  @objc final public let isAccountLiteExperienceEnabled: Swift.Bool
+  @objc final public let shouldVerboseLog: Swift.Bool
+  @objc final public let isFilipinoSupportDisabled: Swift.Bool
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPRemoteConfigManager) public class RemoteConfigManager : ObjectiveC.NSObject, NGP.RemoteConfigManagerProtocol {
+  @objc public var config: NGP.RemoteConfig {
+    get
+  }
+  @objc public static let shared: NGP.RemoteConfigManager
+  @objc public func updateConfig(config: [Swift.String : Any])
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class AchievementsDebugSettings {
+  public static var useMockAchievementData: Swift.Bool {
+    get
+  }
+  public static var tapAchievementToDismiss: Swift.Bool {
+    get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc @objcMembers public class UnifiedLogging : ObjectiveC.NSObject {
+  @objc public class var isEnabled: Swift.Bool {
+    @objc get
+  }
+  @objc public class func configureLogger(enableLoggingOverride: Swift.Bool)
+  @objc public class func instrumentAPI(fileID: Swift.String, function: Swift.String)
+  @objc override dynamic public init()
+  @objc deinit
+}
+public let ULogger: os.Logger
+public func logWrapper(shouldLogFlag: Swift.Bool, _ items: Any...)
+@_hasMissingDesignatedInitializers @objc(NetflixPlayerIdentity) @objcMembers public class PlayerIdentity : ObjectiveC.NSObject, Swift.Decodable, NGP.Player {
+  @objc final public let playerID: Swift.String
+  @objc final public let handle: Swift.String?
+  @objc public static var current: NGP.PlayerIdentity? {
+    @objc get
+  }
+  @objc public var ID: Swift.String {
+    @objc get
+  }
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc(playerIdentitiesForUCIDs:withCompletionHandler:) public static func playerIdentities(for UCIDs: [Swift.String]) async -> NGP.PlayerIdentitiesResult
+  #endif
+  required public init(from decoder: any Swift.Decoder) throws
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objcMembers @objc(NGPProfileWrapper) public class ProfileWrapper : ObjectiveC.NSObject {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objcMembers @objc(NGPOptionalProfileWrapper) public class OptionalProfileWrapper : ObjectiveC.NSObject {
+  @objc deinit
+}
+extension NGP.NetflixStatsStatus {
+  public var stringValue: Swift.String {
+    get
+  }
+}
+extension NGP.NetflixStatsStatus {
+  public var shouldLogError: Swift.Bool {
+    get
+  }
+}
+public typealias SubmitStatResult = NGP.Stat.SubmitStatResult
+extension NGP.NetflixStatsStatus : Swift.CaseIterable {
+  public static var allCases: [NGP.NetflixStatsStatus] {
+    get
+  }
+  public typealias AllCases = [NGP.NetflixStatsStatus]
+}
+@objc(NetflixAggregatedStatResult) public class AggregatedStatResult : ObjectiveC.NSObject {
+  @objc final public let status: NGP.NetflixStatsStatus
+  @objc final public let aggregatedStat: NGP.NetflixStatItem?
+  @objc final public let result: NGP.Stat.SubmitStatResult
+  @objc public init(result: NGP.Stat.SubmitStatResult, aggregatedStat: NGP.NetflixStatItem? = nil)
+  @objc public func bridgeRepresentation() -> Swift.String
+  @objc deinit
+}
+extension NGP.NetflixStatItem : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  required convenience public init(from decoder: any Swift.Decoder) throws
+}
+@_inheritsConvenienceInitializers @objc(NGPStat) public class Stat : ObjectiveC.NSObject {
+  @objc(stringForNetflixStatsStatus:) public class func stringForNetflixStatsStatus(status: NGP.NetflixStatsStatus) -> Swift.String
+  @objc public class SubmitStatResult : ObjectiveC.NSObject {
+    @objc final public let status: NGP.NetflixStatsStatus
+    @objc public var submittedStat: NGP.NetflixStatItem? {
+      get
+    }
+    @objc public var aggregatedStat: NGP.NetflixStatItem? {
+      get
+    }
+    @objc convenience public init(status: NGP.NetflixStatsStatus)
+    @objc public init(status: NGP.NetflixStatsStatus, submittedStat: NGP.NetflixStatItem?, aggregatedStat: NGP.NetflixStatItem?)
+    @objc public func bridgeRepresentation() -> Swift.String
+    @objc deinit
+  }
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(NGPVisibilityStateManager) public protocol VisiblityStateManager {
+  @objc var isNetflixUIVisible: Swift.Bool { get }
+}
+@_hasMissingDesignatedInitializers @objc(NGPOverlayDelegate) public class OverlayDelegate : ObjectiveC.NSObject, NGP.VisiblityStateManager {
+  @objc public static var shared: NGP.OverlayDelegate
+  @objc public var isOverlayPreferredHidden: Swift.Bool {
+    get
+  }
+  @objc public var toastLocation: NGP.NGPLocation {
+    get
+  }
+  @objc public func toggleIsOverlayPreferredHidden(isHidden: Swift.Bool, loggingCompletion: ((Swift.Bool) -> Swift.Void)? = nil)
+  @objc public func updateToastLocation(location: NGP.NGPLocation, loggingCompletion: ((Swift.Bool) -> Swift.Void)? = nil)
+  @objc public func initializeOverlay(isHidden: Swift.Bool, toastLocation: NGP.NGPLocation, loggingCompletion: ((Swift.Bool) -> Swift.Void)? = nil)
+  @objc public var isNetflixUIVisible: Swift.Bool {
+    @objc get
+  }
+  @objc deinit
+}
+@objc(NGPAccessEvent) public protocol AccessEvent {
+}
+@_hasMissingDesignatedInitializers @objc(NGPNeedsProfileSelectionAccessEvent) public class NeedsProfileSelectionAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc public init(previousProfileObject: ObjectiveC.NSObject, error: Foundation.NSError? = nil)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPProfileSelectedAccessEvent) public class ProfileSelectedAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc public init(currentProfileObject: ObjectiveC.NSObject, previousProfileObject: ObjectiveC.NSObject?)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPSignupBeganAccessEvent) public class SignupBeganAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPSignupSuccessfulAccessEvent) public class SignupSuccessfulAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc public init(currentProfileObject: ObjectiveC.NSObject?)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPLoginSuccessfulAccessEvent) public class LoginSuccessfulAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPLoggedOutAccessEvent) public class LoggedOutAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc public init(previousProfileObject: ObjectiveC.NSObject?)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPCheckAuthAccessEvent) public class CheckAuthAccessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc public init(currentProfileObject: ObjectiveC.NSObject?, previousProfileObject: ObjectiveC.NSObject?, accessState: Swift.Int, error: Foundation.NSError?)
+  @objc deinit
+}
+@objc public enum GraphQLErrorHandlerOutcome : Swift.Int {
+  case logout, signup, needsCheckAccess
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(NGPGraphQLErrorHandlerAccessEvent) public class GraphQLErrorHandlerAcessEvent : ObjectiveC.NSObject, NGP.AccessEvent {
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objcMembers @objc(NGPLoggerProvider) public class LoggerProvider : ObjectiveC.NSObject {
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NGPStatsRequestQueue) public class StatsRequestQueue : ObjectiveC.NSObject {
+  @objc public static let shared: NGP.StatsRequestQueue
+  @objc public func submitStat(statItem: NGP.NetflixStatItem)
+  @objc public func submitStatNow(statItem: NGP.NetflixStatItem, callback: @escaping (NGP.SubmitStatResult) -> Swift.Void)
+  @objc public func getAggregatedStat(name: Swift.String, idempotencyKey: Swift.String, callback: @escaping NGP.NetflixAggregatedStatCallback)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPAchievementsBridgeFormatter) public class AchievementsBridgeFormatter : ObjectiveC.NSObject {
+  @objc public func bridgeRepresentation(achievementResult: NGP.UnlockAchievementResult) -> Swift.String
+  @objc public func bridgeRepresentation(achievementsResult: NGP.AchievementsResult) -> Swift.String
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixPlayerIdentitiesResult) @objcMembers public class PlayerIdentitiesResult : ObjectiveC.NSObject {
+  @objc(NetflixPlayerIdentitiesRequestStatus) public enum RequestStatus : Swift.Int {
+    case success = 0
+    case unknownError = 1000
+    case limitExceeded = 1002
+    case networkError = 1003
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc final public let playerIdentities: [Swift.String : NGP.PlayerIdentityResult]?
+  @objc final public let status: NGP.PlayerIdentitiesResult.RequestStatus
+  @objc final public let message: Swift.String?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixPlayerIdentityResult) @objcMembers public class PlayerIdentityResult : ObjectiveC.NSObject {
+  @objc(NetflixPlayerIdentityRequestStatus) public enum RequestStatus : Swift.Int {
+    case success
+    case notFound
+    case unavailable
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  @objc final public let playerIdentity: NGP.PlayerIdentity?
+  @objc final public let status: NGP.PlayerIdentityResult.RequestStatus
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc public class NSErrorAlertStringReason : ObjectiveC.NSObject {
+  @objc public static let incorrectUserLoginId: Swift.String
+  @objc public static let incorrectPassword: Swift.String
+  @objc public static let throttling: Swift.String
+  @objc public static let tokensExceeded: Swift.String
+  @objc public static let appUpdateRequired: Swift.String
+  @objc public static let ineligible: Swift.String
+  @objc public static let accountAlreadyExists: Swift.String
+  @objc public static let profileAccessPinIncorrect: Swift.String
+  @objc public static let network: Swift.String
+  @objc public static let needsProfileSelection: Swift.String
+  @objc public static let needsLogin: Swift.String
+  @objc public static let profileNotMatureEnough: Swift.String
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public class NSErrorAlertError : ObjectiveC.NSObject {
+  @objc public init(error: any Swift.Error, data: (any NGP.AuthenticationData)? = nil)
+  @objc public var title: Swift.String {
+    @objc get
+  }
+  @objc public var message: Swift.String {
+    @objc get
+  }
+  @objc public var dismissButton: NGP.AlertErrorButton {
+    @objc get
+  }
+  @objc public var secondaryButton: NGP.AlertErrorButton? {
+    @objc get
+  }
+  @objc public var errorCode: Swift.String {
+    @objc get
+  }
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objcMembers @objc(NGPEventEmitterProvider) public class EventEmitterProvider : ObjectiveC.NSObject {
+  @objc public init(eventEmitterProtocolConformingObject: Swift.AnyObject)
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPDebugLogger) public class DebugLogger : ObjectiveC.NSObject {
+  @objc public static func debug(_ message: Swift.String)
+  @objc public static func server(_ message: Swift.String)
+  @objc public static func device(_ message: Swift.String)
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(NGPValidationData) public class TextInputConfiguration : ObjectiveC.NSObject {
+  final public let label: Swift.String
+  final public let minLength: Foundation.NSNumber?
+  final public let maxLength: Foundation.NSNumber?
+  @objc public init(label: Swift.String, isMasked: Swift.Bool = false, minLength: Foundation.NSNumber? = nil, maxLength: Foundation.NSNumber? = nil, validationPattern: Swift.String? = nil)
+  public func validate(_ string: Swift.String) -> Swift.Bool
+  @objc deinit
+}
+@objc(NGPAuthenticationData) public protocol AuthenticationData {
+}
+@objc(NGPLoginAuthenticationData) public class LoginAuthenticationData : ObjectiveC.NSObject, NGP.AuthenticationData {
+  @objc(NGPPhoneCode) public class PhoneCode : ObjectiveC.NSObject {
+    final public let code: Swift.String
+    final public let phoneCodePrefix: Swift.String
+    final public let name: Swift.String
+    @objc public init(code: Swift.String, phoneCodePrefix: Swift.String, name: Swift.String)
+    @objc deinit
+  }
+  @objc(NGPRecaptchaConfig) public class RecaptchaConfig : ObjectiveC.NSObject {
+    final public let siteKey: Swift.String
+    final public let timeoutMs: Swift.Int
+    @objc public init(siteKey: Swift.String, timeoutMs: Swift.Int)
+    @objc deinit
+  }
+  @objc(NGPRecaptchaData) public class RecaptchaData : ObjectiveC.NSObject {
+    @objc final public let responseToken: Swift.String?
+    @objc final public let responseTime: Foundation.NSNumber?
+    @objc final public let error: Swift.String?
+    public init(responseToken: Swift.String?, responseTime: Foundation.NSNumber?, error: Swift.String?)
+    @objc deinit
+  }
+  @objc public var username: Swift.String?
+  @objc public var password: Swift.String?
+  @objc public var countryCode: Swift.String?
+  @objc public var recaptchaData: NGP.LoginAuthenticationData.RecaptchaData?
+  final public let usernameInputConfiguration: NGP.TextInputConfiguration?
+  final public let passwordInputConfiguration: NGP.TextInputConfiguration?
+  final public let phoneCodes: [NGP.LoginAuthenticationData.PhoneCode]?
+  final public let recaptchaConfig: NGP.LoginAuthenticationData.RecaptchaConfig?
+  @objc public init(username: Swift.String?, password: Swift.String?, countryCode: Swift.String?, recaptchaData: NGP.LoginAuthenticationData.RecaptchaData?, usernameInputConfiguration: NGP.TextInputConfiguration?, passwordInputConfiguration: NGP.TextInputConfiguration?, phoneCodes: [NGP.LoginAuthenticationData.PhoneCode]?, recaptchaConfig: NGP.LoginAuthenticationData.RecaptchaConfig?)
+  @objc convenience public init(username: Swift.String?, password: Swift.String?)
+  @objc deinit
+}
+@objc(NGPCreateAccountAuthenticationData) public class CreateAccountAuthenticationData : ObjectiveC.NSObject, NGP.AuthenticationData {
+  final public let title: Swift.String
+  final public let body: Swift.String
+  final public let registrationSubmitLabel: Swift.String
+  final public let usernameInputConfiguration: NGP.TextInputConfiguration
+  final public let passwordInputConfiguration: NGP.TextInputConfiguration
+  final public let privacyPolicyUrl: Swift.String?
+  @objc public var email: Swift.String?
+  @objc public var password: Swift.String?
+  @objc final public let consents: [NGP.AuthenticationConsent]
+  @objc public init(title: Swift.String, body: Swift.String, consents: [NGP.AuthenticationConsent], registrationSubmitLabel: Swift.String, usernameInputConfiguration: NGP.TextInputConfiguration, passwordInputConfiguration: NGP.TextInputConfiguration, privacyPolicyUrl: Swift.String?)
+  @objc deinit
+}
+@objc(NGPReturningAccountAuthenticationData) public class ReturningAccountAuthenticationData : ObjectiveC.NSObject, NGP.AuthenticationData {
+  final public let title: Swift.String
+  final public let body: Swift.String
+  final public let continueLabel: Swift.String
+  @objc public init(title: Swift.String, body: Swift.String, continueLabel: Swift.String)
+  @objc deinit
+}
+@objc(NGPOrderConfirmAuthenticationData) public class OrderConfirmAuthenticationData : ObjectiveC.NSObject, NGP.AuthenticationData {
+  @objc(NGPOrderConfirmPlanFeature) public class PlanFeature : ObjectiveC.NSObject {
+    @objc(NGPOrderConfirmPlanFeatureIcon) public enum Icon : ObjectiveC.NSInteger {
+      case game
+      case playIcon
+      case creditCard
+      public init?(rawValue: ObjectiveC.NSInteger)
+      public typealias RawValue = ObjectiveC.NSInteger
+      public var rawValue: ObjectiveC.NSInteger {
+        get
+      }
+    }
+    final public let icon: NGP.OrderConfirmAuthenticationData.PlanFeature.Icon
+    final public let label: Swift.String
+    @objc public init(icon: NGP.OrderConfirmAuthenticationData.PlanFeature.Icon, label: Swift.String)
+    @objc deinit
+  }
+  final public let title: Swift.String
+  final public let planIntro: Swift.String
+  final public let planFeatures: [NGP.OrderConfirmAuthenticationData.PlanFeature]
+  @objc final public let checkAllConsent: NGP.AuthenticationConsent?
+  @objc final public let consents: [NGP.AuthenticationConsent]
+  final public let disclaimerText: Swift.String?
+  final public let startCtaLabel: Swift.String
+  final public let footer: Swift.String
+  final public let termsOfUseUrl: Swift.String
+  final public let privacyPolicyUrl: Swift.String
+  @objc final public let productId: Swift.String
+  @objc final public let accountGuid: Swift.String
+  @objc public var price: Swift.String?
+  @objc public var receipt: Swift.String?
+  @objc public init(title: Swift.String, planIntro: Swift.String, planFeatures: [NGP.OrderConfirmAuthenticationData.PlanFeature], checkAllConsent: NGP.AuthenticationConsent?, consents: [NGP.AuthenticationConsent], disclaimerText: Swift.String?, startCtaLabel: Swift.String, footer: Swift.String, termsOfUseUrl: Swift.String, privacyPolicyUrl: Swift.String, productId: Swift.String, accountGuid: Swift.String)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NGPActiveMembershipAuthenticationData) public class ActiveMembershipAuthenticationData : ObjectiveC.NSObject, NGP.AuthenticationData {
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(NetflixAchievements) public class Achievements : ObjectiveC.NSObject {
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc public static func unlockAchievement(achievementName: Swift.String) async -> NGP.UnlockAchievementResult
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  @objc public static func achievements() async -> NGP.AchievementsResult
+  #endif
+  @objc public static func showAchievementsPanel()
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(NetflixAchievementStatus) public enum AchievementStatus : Swift.Int {
+  case ok = 0
+  case errorUnknown = 1000
+  case errorNetwork = 1003
+  case errorPlatformNotInitialized = 1004
+  case errorUserProfileNotSelected = 1005
+  case errorInterruptedByProfileSwitch = 1006
+  case errorInternal = 1009
+  case errorTimedOut = 1011
+  case errorUnavailable = 1012
+  case errorUnknownAchievement = 2000
+  case errorArchivedAchievement = 2001
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(NetflixAchievement) public class Achievement : ObjectiveC.NSObject {
+  @objc final public let name: Swift.String
+  @objc final public let isLocked: Swift.Bool
+  @objc deinit
+}
+@objc public enum NetflixAchievementState : Swift.Int {
+  case locked, unlocked, pendingUnlock
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(NetflixUnlockAchievementResult) public class UnlockAchievementResult : ObjectiveC.NSObject {
+  @objc final public let status: NGP.AchievementStatus
+  @objc final public let achievement: NGP.Achievement?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixAchievementsResult) public class AchievementsResult : ObjectiveC.NSObject {
+  @objc final public let status: NGP.AchievementStatus
+  @objc final public let achievements: [NGP.Achievement]
+  @objc deinit
+}
+extension Foundation.URLSessionConfiguration {
+  public static let profileImageSessionConfig: Foundation.URLSessionConfiguration
+}
+@_hasMissingDesignatedInitializers @objc(NGPAlertErrorButton) public class AlertErrorButton : ObjectiveC.NSObject {
+  @objc deinit
+}
+@objc(NGPAccessStateManagerObjCProtocol) public protocol AccessStateManagerObjCProtocol {
+  @objc var currentAccessStateRawValue: Swift.Int { get }
+  @objc(handleAccessEvent:) func handleAccessEvent(accessEvent: any NGP.AccessEvent)
+  @objc var isShowingProfileGate: Swift.Bool { get }
+}
+@objc(NGPAccessStateManager) public class AccessStateManager : ObjectiveC.NSObject {
+  @objc public var currentAccessStateRawValue: Swift.Int {
+    @objc get
+  }
+  @objc public var isFirstCheckAccess: Swift.Bool {
+    @objc get
+  }
+  @objc public var isShowingProfileGate: Swift.Bool {
+    @objc get
+  }
+  @objc public var lastTransition: Swift.String {
+    @objc get
+  }
+  @objc public func _setViewTransitionDelegate(_ delegate: Swift.AnyObject?)
+  @objc public init(eventEmitterProvider: NGP.EventEmitterProvider, loggerProvider: NGP.LoggerProvider)
+  @objc(handleAccessEvent:) public func handleAccessEvent(accessEvent: any NGP.AccessEvent)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixLeaderboardEntriesResult) @objcMembers public class LeaderboardEntriesResult : ObjectiveC.NSObject {
+  @objc final public let status: NGP.NetflixLeaderboardStatus
+  @objc final public let page: NGP.LeaderboardEntryPage?
+  @objc required public init(status: NGP.NetflixLeaderboardStatus, message: Swift.String)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixLeaderboardEntryPage) @objcMembers public class LeaderboardEntryPage : ObjectiveC.NSObject {
+  @objc final public let startCursor: Swift.String?
+  @objc final public let endCursor: Swift.String?
+  @objc final public let hasMoreBeforeStart: Swift.Bool
+  @objc final public let hasMoreAfterEnd: Swift.Bool
+  @objc final public let leaderboardEntries: [NGP.LeaderboardEntry]
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixLeaderboardEntry) @objcMembers public class LeaderboardEntry : ObjectiveC.NSObject {
+  @objc final public let rank: Swift.Int
+  @objc final public let position: Swift.Int
+  @objc final public let score: Swift.String
+  @objc final public let playerIdentity: NGP.PlayerIdentity
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixLeaderboardEntryResult) @objcMembers public class LeaderboardEntryResult : ObjectiveC.NSObject {
+  @objc final public let status: NGP.NetflixLeaderboardStatus
+  @objc final public let entry: NGP.LeaderboardEntry?
+  @objc required public init(status: NGP.NetflixLeaderboardStatus, message: Swift.String)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(NetflixLeaderboardInfoResult) @objcMembers public class LeaderboardInfoResult : ObjectiveC.NSObject {
+  @objc final public let leaderboardInfo: NGP.LeaderboardInfo?
+  @objc final public let status: NGP.NetflixLeaderboardStatus
+  @objc required public init(status: NGP.NetflixLeaderboardStatus, message: Swift.String)
+  @objc deinit
+}
+@objc(NetflixLeaderboardInfo) @objcMembers public class LeaderboardInfo : ObjectiveC.NSObject {
+  @objc final public let count: Swift.Int
+  @objc final public let name: Swift.String
+  @objc public init(count: Swift.Int, name: Swift.String)
+  @objc deinit
+}
+@objc(InGameEvent) @objcMembers open class InGameEvent : ObjectiveC.NSObject, Swift.Encodable {
+  @objc public var name: Swift.String?
+  @objc public var json: Swift.String?
+  @objc public init(name: Swift.String)
+  @objc public init(name: Swift.String, data: Swift.String)
+  @objc public func clear()
+  @objc public func toJSON() throws -> Swift.String
+  @objc deinit
+  open func encode(to encoder: any Swift.Encoder) throws
+}
+extension NGP.StoreError : Swift.Equatable {}
+extension NGP.StoreError : Swift.Hashable {}
+extension NGP.PlayersResult.Status : Swift.Equatable {}
+extension NGP.PlayersResult.Status : Swift.Hashable {}
+extension NGP.PlayersResult.Status : Swift.RawRepresentable {}
+extension NGP.PlayerResult.Status : Swift.Equatable {}
+extension NGP.PlayerResult.Status : Swift.Hashable {}
+extension NGP.PlayerResult.Status : Swift.RawRepresentable {}
+extension NGP.OrderConfirmAuthenticationData.PlanFeature.Icon : Swift.Equatable {}
+extension NGP.OrderConfirmAuthenticationData.PlanFeature.Icon : Swift.Hashable {}
+extension NGP.OrderConfirmAuthenticationData.PlanFeature.Icon : Swift.RawRepresentable {}
+extension NGP.GraphQLErrorHandlerOutcome : Swift.Equatable {}
+extension NGP.GraphQLErrorHandlerOutcome : Swift.Hashable {}
+extension NGP.GraphQLErrorHandlerOutcome : Swift.RawRepresentable {}
+extension NGP.PlayerIdentitiesResult.RequestStatus : Swift.Equatable {}
+extension NGP.PlayerIdentitiesResult.RequestStatus : Swift.Hashable {}
+extension NGP.PlayerIdentitiesResult.RequestStatus : Swift.RawRepresentable {}
+extension NGP.PlayerIdentityResult.RequestStatus : Swift.Equatable {}
+extension NGP.PlayerIdentityResult.RequestStatus : Swift.Hashable {}
+extension NGP.PlayerIdentityResult.RequestStatus : Swift.RawRepresentable {}
+extension NGP.AchievementStatus : Swift.Equatable {}
+extension NGP.AchievementStatus : Swift.Hashable {}
+extension NGP.AchievementStatus : Swift.RawRepresentable {}
+extension NGP.NetflixAchievementState : Swift.Equatable {}
+extension NGP.NetflixAchievementState : Swift.Hashable {}
+extension NGP.NetflixAchievementState : Swift.RawRepresentable {}
+extension NGP.AccessStateManager : NGP.AccessStateManagerObjCProtocol {}

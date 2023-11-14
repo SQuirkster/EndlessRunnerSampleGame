@@ -1,0 +1,549 @@
+# Fragments
+
+fragment Acct on Account {
+  ownerGuid
+  profiles {
+    av32: avatar(dimension: AVATAR_SIZE_32) {
+      url
+    }
+    av64: avatar(dimension: AVATAR_SIZE_64) {
+      url
+    }
+    av100: avatar(dimension: AVATAR_SIZE_100) {
+      url
+    }
+    av160: avatar(dimension: AVATAR_SIZE_160) {
+      url
+    }
+    av320: avatar(dimension: AVATAR_SIZE_320) {
+      url
+    }
+    avatarKey
+    guid
+    primaryLanguage
+    isKids
+    isPinLocked
+    name
+    publicIdentity {
+      ...PublicID
+    }
+    publicIdentityConfiguration {
+      ...PublicIDConfig
+    }
+  }
+}
+
+fragment FlowState on NGPSignupFlowState {
+  flowKey
+  account {
+    ...Acct
+  }
+  error {
+    alert {
+      errorCode
+      title {
+        ...Localized
+      }
+      message {
+        ...Localized
+      }
+      dismissAction {
+        label {
+          ...Localized
+        }
+      }
+      secondaryAction {
+        label {
+          ...Localized
+        }
+      }
+    }
+    reason
+  }
+  mode {
+    modeType: __typename
+    ... on NGPSignupRegistrationMode {
+      title {
+        ...Localized
+      }
+      description {
+        ...Localized
+      }
+      consents {
+        ...Consent
+      }
+      email {
+        ...TextInput
+      }
+      password {
+        ...TextInput
+      }
+      submit {
+        label {
+          ...Localized
+        }
+      }
+      privacyStatementURL
+    }
+    ... on NGPSignupReturningAccountMode {
+      title {
+        ...Localized
+      }
+      description {
+        ...LocalizedFormatted
+      }
+      continue {
+        label {
+          ...Localized
+        }
+      }
+    }
+    ... on NGPSignupOrderConfirmMode {
+      title {
+        ...Localized
+      }
+      planIntro {
+        ...LocalizedFormatted
+      }
+      planFeatures {
+        icon
+        description {
+          ...Localized
+        }
+      }
+      disclaimer {
+        ...Localized
+      }
+      primaryConsent {
+        ...Consent
+      }
+      consents {
+        ...Consent
+      }
+      termsOfUseURL
+      privacyStatementURL
+      footer {
+        ...Localized
+      }
+      productIdentifier
+      startMembership {
+        label {
+          ...Localized
+        }
+      }
+    }
+    ... on NGPSignupMembershipActiveMode {
+      account {
+        ...Acct
+      }
+    }
+  }
+}
+
+fragment ngpLocalizedStringFields on LocalizedString {
+  value
+}
+
+fragment alertFields on AlertDialog {
+  title {
+    ...ngpLocalizedStringFields
+  }
+  message {
+    ...ngpLocalizedStringFields
+  }
+  errorCode
+  dismissAction {
+    label {
+      ...ngpLocalizedStringFields
+    }
+  }
+}
+
+fragment Localized on LocalizedString {
+  value(locale: $locale)
+}
+
+fragment LocalizedFormatted on LocalizedFormattedString {
+  value(locale: $locale, format: MARKDOWN)
+}
+
+fragment TextInput on AcquisitionTextInputConfiguration {
+  label {
+    ...Localized
+  }
+  validationPattern
+  minLength
+  maxLength
+  value
+}
+
+fragment Consent on AcquisitionConsent {
+  consentKey
+  required
+  label {
+    ...Localized
+  }
+  isPreChecked
+}
+
+# Account query
+
+query Account {
+  account {
+    ...Acct
+  }
+}
+
+# Login
+
+query LoginConfigAndSDKConfig($itunesid: String, $locale: String) {
+  ngpAppleLoginConfiguration(signupOptions: { iTunesIdentifier: $itunesid }) {
+    flowKey
+    userLoginId {
+      minLength
+      maxLength
+      validationPattern
+    }
+    password {
+      minLength
+      maxLength
+      validationPattern
+    }
+    recaptchaConfiguration {
+      siteKey
+      timeoutMs
+    }
+  }
+  countries {
+    code
+    name {
+      value(locale: $locale)
+    }
+    phoneCodePrefix
+  }
+  acquisitionCorporateInformation {
+    contentLines {
+      value(locale: $locale)
+    }
+    ctaButtonLabel {
+      value(locale: $locale)
+    }
+    footerLines {
+      value(locale: $locale)
+    }
+    links {
+      label {
+        value(locale: $locale)
+      }
+      url
+    }
+    title {
+      value(locale: $locale)
+    }
+  }
+  
+  ngpSdkConfig {
+    isFilipinoSupportDisabled
+    isRemoteDebugLoggerEnabled
+    iosSdkConfig {
+      isAccountLiteExperienceEnabled
+    }
+  }
+}
+
+query SDKConfig {
+  ngpSdkConfig {
+    isFilipinoSupportDisabled
+    isRemoteDebugLoggerEnabled
+    iosSdkConfig {
+      isAccountLiteExperienceEnabled
+    }
+  }
+}
+
+mutation Login(
+  $flowkey: String
+  $userLoginId: String!
+  $password: String!
+  $countryCode: String!
+  $recaptchaResult: AcquisitionRecaptchaResult
+  $locale: String!
+) {
+  ngpAppleLogin(
+    flowKey: $flowkey
+    credentials: {
+      userLoginId: $userLoginId
+      password: $password
+      countryCode: $countryCode
+    }
+    recaptchaResult: $recaptchaResult
+  ) {
+    ... on NGPSignupRequired {
+      flowState {
+        ...FlowState
+      }
+    }
+    ... on LoginFailure {
+      alert {
+        errorCode
+        title {
+          ...Localized
+        }
+        message {
+          ...Localized
+        }
+        dismissAction {
+          label {
+            ...Localized
+          }
+        }
+        secondaryAction {
+          label {
+            ...Localized
+          }
+        }
+      }
+      cause
+    }
+    ... on LoginSuccess {
+      account {
+        ...Acct
+      }
+    }
+  }
+}
+
+mutation SSOLogin($ssoToken: String!, $locale: String) {
+  ngpSSOLogin(ssoToken: $ssoToken) {
+    ... on NGPSSOLoginFailure {
+      cause
+      localizedString {
+        value(locale: $locale)
+      }
+    }
+    ... on NGPSSOLoginSuccess {
+      account {
+        ...Acct
+      }
+    }
+  }
+}
+
+# profiles and access
+
+mutation SwitchProfile($guid: ID!, $pin: String, $locale: String) {
+  ngpProfileSwitch(targetProfileGuid: $guid, profileAccessPin: $pin) {
+    ... on NGPProfileSwitchFailure {
+      reason
+      localizedString {
+        value(locale: $locale)
+      }
+    }
+    ... on NGPProfileSwitchSuccess {
+      ngpAuthenticatedUser {
+        id
+      }
+      ngpProfile {
+        id
+        loggingId
+      }
+      accessToken {
+        token
+      }
+    }
+  }
+}
+
+mutation CheckAccess(
+  $playToken: String
+  $gamerAccessToken: String
+  $locale: String
+) {
+  ngpCheckAccess(
+    ngpPlayToken: $playToken
+    gamerAccessToken: $gamerAccessToken
+  ) {
+    ... on NGPAccessDeniedError {
+      action
+      localizedString {
+        value(locale: $locale)
+      }
+    }
+    ... on NGPAccess {
+      limits {
+        ... on NGPLimitsExceededError {
+          reason
+          localizedString {
+            value(locale: $locale)
+          }
+        }
+        ... on NGPLimits {
+          ngpToken
+        }
+      }
+      renewedAccessToken {
+        token
+      }
+    }
+  }
+}
+
+mutation Logout {
+  ngpLogout {
+    ... on NGPLogoutSuccess {
+      __typename
+    }
+  }
+}
+
+mutation SyntheticAllocate(
+  $appVersionState: AppVersionState
+  $appVersion: String!
+  $osVersion: String!
+  $sdkVersion: String!
+) {
+  allocateSyntheticTests(
+    payload: {
+      appVersion: $appVersion
+      appVersionState: $appVersionState
+      osVersion: $osVersion
+      sdkVersion: $sdkVersion
+    }
+  ) {
+    testId
+    cell
+  }
+}
+
+mutation RenewSSOToken($ssoToken: String!) {
+  renewSSOToken(ssoToken: $ssoToken) {
+    ... on SSOTokenRenewed {
+      ssoToken
+    }
+    ... on SSOTokenNotRenewed {
+      reason
+    }
+  }
+}
+
+mutation CreateSSOToken {
+  createSSOToken
+}
+
+query UpdateUrlConfiguration($language: String) {
+  ngpUrlConfiguration(language: $language) {
+    account
+    communityGuidelines
+    help
+    helpDeleteAccountArticle
+    privacyPolicy
+    recoverPassword
+    recoverProfilePIN
+  }
+}
+
+mutation RevokePushConsent($token: String!) {
+  revokePushConsent(revoke: { token: $token, osType: IOS }) {
+    infos {
+      success
+    }
+  }
+}
+
+mutation RegisterPushConsent(
+  $deviceToken: String!
+  $appVersion: String!
+  $osVersion: String!
+  $sdkVersion: String!
+  $isAlertEnabled: Boolean
+  $isSoundEnabled: Boolean
+  $isBadgeEnabled: Boolean
+) {
+  registerPushConsent(
+    register: {
+      pushDeviceInfo: {
+        deviceToken: $deviceToken
+        osType: IOS
+        appVersion: $appVersion
+        osVersion: $osVersion
+        sdkVersion: $sdkVersion
+        isAlertEnabled: $isAlertEnabled
+        isSoundEnabled: $isSoundEnabled
+        isBadgeEnabled: $isBadgeEnabled
+      }
+    }
+  ) {
+    infos {
+      success
+    }
+  }
+}
+
+# Signup
+
+mutation SignupInit($itunesId: String!, $locale: String, $country: String!) {
+  ngpSignupInit(
+    options: {
+      iTunesIdentifier: $itunesId
+      locale: $locale
+      storeCountry: $country
+    }
+  ) {
+    ...FlowState
+  }
+}
+
+mutation RegistrationSubmit(
+  $flowkey: String!
+  $email: String!
+  $password: String!
+  $locale: String!
+  $conscents: [AcquisitionConsentAcceptance!]
+) {
+  ngpSignupRegistrationSubmit(
+    flowKey: $flowkey
+    fields: { email: $email, password: $password, consents: $conscents }
+  ) {
+    ...FlowState
+  }
+}
+
+mutation SignupReturningAccount($flowkey: String!, $locale: String!) {
+  ngpSignupReturningAccountContinue(flowKey: $flowkey) {
+    ...FlowState
+  }
+}
+
+mutation SignupNavigateBack($flowkey: String!, $locale: String!) {
+  ngpSignupNavigateBack(flowKey: $flowkey) {
+    ...FlowState
+  }
+}
+
+mutation SignupMembershipStart(
+  $flowkey: String!
+  $locale: String!
+  $receipt: String!
+  $country: String!
+  $header: String!
+  $payload: String!
+  $sig: String!
+  $fields: NGPSignupMembershipStartInputFields!
+) {
+  ngpSignupMembershipStartApplePayment(
+    flowKey: $flowkey
+    storeKit1Receipt: $receipt
+    storeCountry: $country
+    transaction: { header: $header, payload: $payload, signature: $sig }
+    fields: $fields
+  ) {
+    ...FlowState
+  }
+}
+
+query SignupCurrentState($flowkey: String!, $locale: String!) {
+  ngpSignupCurrentState(flowKey: $flowkey) {
+    ...FlowState
+  }
+}
+

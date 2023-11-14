@@ -1,0 +1,16 @@
+{
+    "name": "NetflixSdk",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e9d637572d6c60f47a11b46506753692"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

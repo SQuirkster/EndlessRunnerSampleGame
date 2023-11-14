@@ -1,0 +1,7 @@
+{
+    "name": "InGame",
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "references":[ "GUID:b330812eb24304d8d9eac54da4e504fd" ]
+}

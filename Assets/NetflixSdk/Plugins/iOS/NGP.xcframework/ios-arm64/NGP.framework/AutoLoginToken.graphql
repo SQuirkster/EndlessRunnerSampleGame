@@ -1,0 +1,3 @@
+mutation AutoLoginToken {
+  createAutoLoginToken(scope: ACCOUNT_LITE_SESSION_TRANSFER)
+}

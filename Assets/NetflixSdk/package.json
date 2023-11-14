@@ -1,0 +1,17 @@
+{
+  "name": "com.netflix.unitysdk",
+  "version": "0.12.1",
+  "displayName": "Netflix Unity SDK",
+  "description": "Netflix Unity SDK for auth, user management and analytics",
+  "unity": "2019.1",
+  "unityRelease": "0b5",
+  "keywords": [
+    "Netflix",
+    "Unity",
+    "Login"
+  ],
+  "author": {
+    "name": "Netflix Inc.",
+    "email": "ashishg@netflix.com"
+  }
+}

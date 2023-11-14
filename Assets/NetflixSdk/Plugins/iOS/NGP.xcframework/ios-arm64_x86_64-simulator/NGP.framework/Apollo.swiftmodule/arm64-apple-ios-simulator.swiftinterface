@@ -1,0 +1,817 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.8.1 (swiftlang-5.8.0.124.5 clang-1403.0.22.11.100)
+// swift-module-flags: -target arm64-apple-ios12.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name Apollo
+import ApolloAPI
+import ApolloUtils
+import Dispatch
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+public enum CachePolicy {
+  case returnCacheDataElseFetch
+  case fetchIgnoringCacheData
+  case fetchIgnoringCacheCompletely
+  case returnCacheDataDontFetch
+  case returnCacheDataAndFetch
+  public static var `default`: Apollo.CachePolicy
+  public static func == (a: Apollo.CachePolicy, b: Apollo.CachePolicy) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public typealias GraphQLResultHandler<Data> = (Swift.Result<Apollo.GraphQLResult<Data>, any Swift.Error>) -> Swift.Void
+public class ApolloClient {
+  final public let store: Apollo.ApolloStore
+  public enum ApolloClientError : Swift.Error, Foundation.LocalizedError {
+    case noUploadTransport
+    public var errorDescription: Swift.String? {
+      get
+    }
+    public static func == (a: Apollo.ApolloClient.ApolloClientError, b: Apollo.ApolloClient.ApolloClientError) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public init(networkTransport: any Apollo.NetworkTransport, store: Apollo.ApolloStore)
+  convenience public init(url: Foundation.URL)
+  @objc deinit
+}
+extension Apollo.ApolloClient : Apollo.ApolloClientProtocol {
+  public var cacheKeyForObject: Apollo.CacheKeyForObject? {
+    get
+    set
+  }
+  public func clearCache(callbackQueue: Dispatch.DispatchQueue = .main, completion: ((Swift.Result<Swift.Void, any Swift.Error>) -> Swift.Void)? = nil)
+  @discardableResult
+  public func fetch<Query>(query: Query, cachePolicy: Apollo.CachePolicy = .default, contextIdentifier: Foundation.UUID? = nil, queue: Dispatch.DispatchQueue = .main, resultHandler: Apollo.GraphQLResultHandler<Query.Data>? = nil) -> any Apollo.Cancellable where Query : Apollo.GraphQLQuery
+  public func watch<Query>(query: Query, cachePolicy: Apollo.CachePolicy = .default, callbackQueue: Dispatch.DispatchQueue = .main, resultHandler: @escaping Apollo.GraphQLResultHandler<Query.Data>) -> Apollo.GraphQLQueryWatcher<Query> where Query : Apollo.GraphQLQuery
+  @discardableResult
+  public func perform<Mutation>(mutation: Mutation, publishResultToStore: Swift.Bool = true, queue: Dispatch.DispatchQueue = .main, resultHandler: Apollo.GraphQLResultHandler<Mutation.Data>? = nil) -> any Apollo.Cancellable where Mutation : Apollo.GraphQLMutation
+  @discardableResult
+  public func upload<Operation>(operation: Operation, files: [Apollo.GraphQLFile], queue: Dispatch.DispatchQueue = .main, resultHandler: Apollo.GraphQLResultHandler<Operation.Data>? = nil) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+  @discardableResult
+  public func subscribe<Subscription>(subscription: Subscription, queue: Dispatch.DispatchQueue = .main, resultHandler: @escaping Apollo.GraphQLResultHandler<Subscription.Data>) -> any Apollo.Cancellable where Subscription : Apollo.GraphQLSubscription
+}
+public protocol ApolloClientProtocol : AnyObject {
+  var store: Apollo.ApolloStore { get }
+  var cacheKeyForObject: Apollo.CacheKeyForObject? { get set }
+  func clearCache(callbackQueue: Dispatch.DispatchQueue, completion: ((Swift.Result<Swift.Void, any Swift.Error>) -> Swift.Void)?)
+  func fetch<Query>(query: Query, cachePolicy: Apollo.CachePolicy, contextIdentifier: Foundation.UUID?, queue: Dispatch.DispatchQueue, resultHandler: Apollo.GraphQLResultHandler<Query.Data>?) -> any Apollo.Cancellable where Query : Apollo.GraphQLQuery
+  func watch<Query>(query: Query, cachePolicy: Apollo.CachePolicy, callbackQueue: Dispatch.DispatchQueue, resultHandler: @escaping Apollo.GraphQLResultHandler<Query.Data>) -> Apollo.GraphQLQueryWatcher<Query> where Query : Apollo.GraphQLQuery
+  func perform<Mutation>(mutation: Mutation, publishResultToStore: Swift.Bool, queue: Dispatch.DispatchQueue, resultHandler: Apollo.GraphQLResultHandler<Mutation.Data>?) -> any Apollo.Cancellable where Mutation : Apollo.GraphQLMutation
+  func upload<Operation>(operation: Operation, files: [Apollo.GraphQLFile], queue: Dispatch.DispatchQueue, resultHandler: Apollo.GraphQLResultHandler<Operation.Data>?) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+  func subscribe<Subscription>(subscription: Subscription, queue: Dispatch.DispatchQueue, resultHandler: @escaping Apollo.GraphQLResultHandler<Subscription.Data>) -> any Apollo.Cancellable where Subscription : Apollo.GraphQLSubscription
+}
+public protocol ApolloErrorInterceptor {
+  func handleErrorAsync<Operation>(error: any Swift.Error, chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+public protocol ApolloInterceptor {
+  func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+public typealias CacheKeyForObject = (_ object: Apollo.JSONObject) -> Any?
+public typealias DidChangeKeysFunc = (Swift.Set<Apollo.CacheKey>, Foundation.UUID?) -> Swift.Void
+final public class ApolloStore {
+  final public var cacheKeyForObject: Apollo.CacheKeyForObject?
+  public init(cache: any Apollo.NormalizedCache = InMemoryNormalizedCache())
+  final public func clearCache(callbackQueue: Dispatch.DispatchQueue = .main, completion: ((Swift.Result<Swift.Void, any Swift.Error>) -> Swift.Void)? = nil)
+  final public func publish(records: Apollo.RecordSet, identifier: Foundation.UUID? = nil, callbackQueue: Dispatch.DispatchQueue = .main, completion: ((Swift.Result<Swift.Void, any Swift.Error>) -> Swift.Void)? = nil)
+  final public func withinReadTransaction<T>(_ body: @escaping (Apollo.ApolloStore.ReadTransaction) throws -> T, callbackQueue: Dispatch.DispatchQueue? = nil, completion: ((Swift.Result<T, any Swift.Error>) -> Swift.Void)? = nil)
+  final public func withinReadWriteTransaction<T>(_ body: @escaping (Apollo.ApolloStore.ReadWriteTransaction) throws -> T, callbackQueue: Dispatch.DispatchQueue? = nil, completion: ((Swift.Result<T, any Swift.Error>) -> Swift.Void)? = nil)
+  final public func load<Operation>(query: Operation, callbackQueue: Dispatch.DispatchQueue? = nil, resultHandler: @escaping Apollo.GraphQLResultHandler<Operation.Data>) where Operation : Apollo.GraphQLOperation
+  @_hasMissingDesignatedInitializers public class ReadTransaction {
+    public func read<Query>(query: Query) throws -> Query.Data where Query : Apollo.GraphQLQuery
+    public func readObject<SelectionSet>(ofType type: SelectionSet.Type, withKey key: Apollo.CacheKey, variables: Apollo.GraphQLMap? = nil) throws -> SelectionSet where SelectionSet : Apollo.GraphQLSelectionSet
+    @objc deinit
+  }
+  @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers final public class ReadWriteTransaction : Apollo.ApolloStore.ReadTransaction {
+    final public func update<Query>(query: Query, _ body: (inout Query.Data) throws -> Swift.Void) throws where Query : Apollo.GraphQLQuery
+    final public func updateObject<SelectionSet>(ofType type: SelectionSet.Type, withKey key: Apollo.CacheKey, variables: Apollo.GraphQLMap? = nil, _ body: (inout SelectionSet) throws -> Swift.Void) throws where SelectionSet : Apollo.GraphQLSelectionSet
+    final public func removeObject(for key: Apollo.CacheKey) throws
+    final public func removeObjects(matching pattern: Apollo.CacheKey) throws
+    final public func write<Query>(data: Query.Data, forQuery query: Query) throws where Query : Apollo.GraphQLQuery
+    final public func write(object: any Apollo.GraphQLSelectionSet, withKey key: Apollo.CacheKey, variables: Apollo.GraphQLMap? = nil) throws
+    @objc deinit
+  }
+  @objc deinit
+}
+public struct AutomaticPersistedQueryInterceptor : Apollo.ApolloInterceptor {
+  public enum APQError : Foundation.LocalizedError {
+    case noParsedResponse
+    case persistedQueryRetryFailed(operationName: Swift.String)
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public init()
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+extension Foundation.Bundle : ApolloUtils.ApolloCompatible {
+  public typealias Base = Foundation.Bundle
+}
+public struct CacheReadInterceptor : Apollo.ApolloInterceptor {
+  public init(store: Apollo.ApolloStore)
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+public struct CacheReference {
+  public let key: Swift.String
+  public init(key: Swift.String)
+}
+extension Apollo.CacheReference : Swift.Equatable {
+  public static func == (lhs: Apollo.CacheReference, rhs: Apollo.CacheReference) -> Swift.Bool
+}
+extension Apollo.CacheReference : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+public struct CacheWriteInterceptor : Apollo.ApolloInterceptor {
+  public enum CacheWriteError : Swift.Error, Foundation.LocalizedError {
+    case noResponseToParse
+    public var errorDescription: Swift.String? {
+      get
+    }
+    public static func == (a: Apollo.CacheWriteInterceptor.CacheWriteError, b: Apollo.CacheWriteInterceptor.CacheWriteError) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public let store: Apollo.ApolloStore
+  public init(store: Apollo.ApolloStore)
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+public protocol Cancellable : AnyObject {
+  func cancel()
+}
+extension Foundation.URLSessionTask : Apollo.Cancellable {
+}
+final public class EmptyCancellable : Apollo.Cancellable {
+  public init()
+  final public func cancel()
+  @objc deinit
+}
+public func unzip<Element1, Element2>(_ array: [(Element1, Element2)]) -> ([Element1], [Element2])
+public func unzip<Element1, Element2, Element3>(_ array: [(Element1, Element2, Element3)]) -> ([Element1], [Element2], [Element3])
+open class DefaultInterceptorProvider : Apollo.InterceptorProvider {
+  public init(client: Apollo.URLSessionClient = URLSessionClient(), shouldInvalidateClientOnDeinit: Swift.Bool = true, store: Apollo.ApolloStore)
+  @objc deinit
+  open func interceptors<Operation>(for operation: Operation) -> [any Apollo.ApolloInterceptor] where Operation : Apollo.GraphQLOperation
+  open func additionalErrorInterceptor<Operation>(for operation: Operation) -> (any Apollo.ApolloErrorInterceptor)? where Operation : Apollo.GraphQLOperation
+}
+extension Swift.Dictionary {
+  public static func += (lhs: inout Swift.Dictionary<Key, Value>, rhs: Swift.Dictionary<Key, Value>)
+}
+extension Dispatch.DispatchQueue : ApolloUtils.ApolloCompatible {
+  public typealias Base = Dispatch.DispatchQueue
+}
+extension ApolloUtils.ApolloExtension where Base == Dispatch.DispatchQueue {
+  public static func performAsyncIfNeeded(on callbackQueue: Dispatch.DispatchQueue?, action: @escaping () -> Swift.Void)
+  public static func returnResultAsyncIfNeeded<T>(on callbackQueue: Dispatch.DispatchQueue?, action: ((Swift.Result<T, any Swift.Error>) -> Swift.Void)?, result: Swift.Result<T, any Swift.Error>)
+}
+public struct GraphQLError : Swift.Error {
+  public init(_ object: Apollo.JSONObject)
+  public subscript(key: Swift.String) -> Any? {
+    get
+  }
+  public var message: Swift.String? {
+    get
+  }
+  public var locations: [Apollo.GraphQLError.Location]? {
+    get
+  }
+  public var extensions: [Swift.String : Any]? {
+    get
+  }
+  public struct Location {
+    public let line: Swift.Int
+    public let column: Swift.Int
+  }
+}
+extension Apollo.GraphQLError : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension Apollo.GraphQLError : Foundation.LocalizedError {
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public struct GraphQLResultError : Swift.Error, Foundation.LocalizedError {
+  public let underlying: any Swift.Error
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public struct GraphQLFile {
+  public let fieldName: Swift.String
+  public let originalName: Swift.String
+  public let mimeType: Swift.String
+  public let data: Foundation.Data?
+  public let fileURL: Foundation.URL?
+  public let contentLength: Swift.UInt64
+  public enum GraphQLFileError : Swift.Error, Foundation.LocalizedError {
+    case couldNotCreateInputStream
+    case couldNotGetFileSize(fileURL: Foundation.URL)
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public static let octetStreamMimeType: Swift.String
+  public init(fieldName: Swift.String, originalName: Swift.String, mimeType: Swift.String = GraphQLFile.octetStreamMimeType, data: Foundation.Data)
+  public init(fieldName: Swift.String, originalName: Swift.String, mimeType: Swift.String = GraphQLFile.octetStreamMimeType, fileURL: Foundation.URL) throws
+  public func generateInputStream() throws -> Foundation.InputStream
+}
+public struct GraphQLGETTransformer {
+  public init(body: Apollo.GraphQLMap, url: Foundation.URL)
+  public func createGetURL() -> Foundation.URL?
+}
+public enum GraphQLHTTPRequestError : Swift.Error, Foundation.LocalizedError {
+  case serializedBodyMessageError
+  case serializedQueryParamsMessageError
+  public var errorDescription: Swift.String? {
+    get
+  }
+  public static func == (a: Apollo.GraphQLHTTPRequestError, b: Apollo.GraphQLHTTPRequestError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public typealias GraphQLMap = [Swift.String : (any Apollo.JSONEncodable)?]
+public protocol GraphQLMapConvertible : Apollo.JSONEncodable {
+  var graphQLMap: Apollo.GraphQLMap { get }
+}
+extension Apollo.GraphQLMapConvertible {
+  public var jsonValue: Any {
+    get
+  }
+}
+public typealias GraphQLID = Swift.String
+public enum GraphQLOperationType {
+  case query
+  case mutation
+  case subscription
+  public static func == (a: Apollo.GraphQLOperationType, b: Apollo.GraphQLOperationType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol GraphQLOperation : AnyObject {
+  var operationType: Apollo.GraphQLOperationType { get }
+  var operationDefinition: Swift.String { get }
+  var operationIdentifier: Swift.String? { get }
+  var operationName: Swift.String { get }
+  var queryDocument: Swift.String { get }
+  var variables: Apollo.GraphQLMap? { get }
+  associatedtype Data : Apollo.GraphQLSelectionSet
+}
+extension Apollo.GraphQLOperation {
+  public var queryDocument: Swift.String {
+    get
+  }
+  public var operationIdentifier: Swift.String? {
+    get
+  }
+  public var variables: Apollo.GraphQLMap? {
+    get
+  }
+}
+public protocol GraphQLQuery : Apollo.GraphQLOperation {
+}
+extension Apollo.GraphQLQuery {
+  public var operationType: Apollo.GraphQLOperationType {
+    get
+  }
+}
+public protocol GraphQLMutation : Apollo.GraphQLOperation {
+}
+extension Apollo.GraphQLMutation {
+  public var operationType: Apollo.GraphQLOperationType {
+    get
+  }
+}
+public protocol GraphQLSubscription : Apollo.GraphQLOperation {
+}
+extension Apollo.GraphQLSubscription {
+  public var operationType: Apollo.GraphQLOperationType {
+    get
+  }
+}
+public protocol GraphQLFragment : Apollo.GraphQLSelectionSet {
+  static var fragmentDefinition: Swift.String { get }
+  static var possibleTypes: [Swift.String] { get }
+}
+final public class GraphQLQueryWatcher<Query> : Apollo.Cancellable where Query : Apollo.GraphQLQuery {
+  final public let query: Query
+  public init(client: any Apollo.ApolloClientProtocol, query: Query, callbackQueue: Dispatch.DispatchQueue = .main, resultHandler: @escaping Apollo.GraphQLResultHandler<Query.Data>)
+  final public func refetch(cachePolicy: Apollo.CachePolicy = .fetchIgnoringCacheData)
+  final public func cancel()
+  @objc deinit
+}
+final public class GraphQLResponse<Data> where Data : Apollo.GraphQLSelectionSet {
+  final public let body: Apollo.JSONObject
+  public init<Operation>(operation: Operation, body: Apollo.JSONObject) where Data == Operation.Data, Operation : Apollo.GraphQLOperation
+  final public func parseResult(cacheKeyForObject: Apollo.CacheKeyForObject? = nil) throws -> (Apollo.GraphQLResult<Data>, Apollo.RecordSet?)
+  final public func parseErrorsOnlyFast() -> [Apollo.GraphQLError]?
+  final public func parseResultFast() throws -> Apollo.GraphQLResult<Data>
+  @objc deinit
+}
+public struct GraphQLResult<Data> {
+  public let data: Data?
+  public let errors: [Apollo.GraphQLError]?
+  public let extensions: [Swift.String : Any]?
+  public enum Source {
+    case cache
+    case server
+    public static func == (a: Apollo.GraphQLResult<Data>.Source, b: Apollo.GraphQLResult<Data>.Source) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public let source: Apollo.GraphQLResult<Data>.Source
+  public init(data: Data?, extensions: [Swift.String : Any]?, errors: [Apollo.GraphQLError]?, source: Apollo.GraphQLResult<Data>.Source, dependentKeys: Swift.Set<Apollo.CacheKey>?)
+}
+public typealias ResultMap = [Swift.String : Any?]
+public protocol GraphQLSelectionSet {
+  static var selections: [any Apollo.GraphQLSelection] { get }
+  var resultMap: Apollo.ResultMap { get }
+  init(unsafeResultMap: Apollo.ResultMap)
+}
+extension Apollo.GraphQLSelectionSet {
+  public init(jsonObject: Apollo.JSONObject, variables: Apollo.GraphQLMap? = nil) throws
+  public var jsonObject: Apollo.JSONObject {
+    get
+  }
+}
+extension Apollo.GraphQLSelectionSet {
+  public init(_ selectionSet: any Apollo.GraphQLSelectionSet) throws
+}
+public func GraphQLVariable(_ name: Swift.String) -> ApolloAPI.InputValue
+public protocol GraphQLSelection {
+}
+public struct GraphQLField : Apollo.GraphQLSelection {
+  public init(_ name: Swift.String, alias: Swift.String? = nil, arguments: Apollo.FieldArguments? = nil, type: Apollo.GraphQLOutputType)
+  public func cacheKey(with variables: [Swift.String : any Apollo.JSONEncodable]?) throws -> Swift.String
+}
+public struct FieldArguments : Swift.ExpressibleByDictionaryLiteral {
+  public init(dictionaryLiteral elements: (Swift.String, ApolloAPI.InputValue)...)
+  public func evaluate(with variables: [Swift.String : any Apollo.JSONEncodable]?) throws -> Any
+  public func evaluate(with variables: [Swift.String : any Apollo.JSONEncodable]?) throws -> Apollo.JSONObject
+  public typealias Key = Swift.String
+  public typealias Value = ApolloAPI.InputValue
+}
+indirect public enum GraphQLOutputType {
+  case scalar(any Apollo.JSONDecodable.Type)
+  case object([any Apollo.GraphQLSelection])
+  case nonNull(Apollo.GraphQLOutputType)
+  case list(Apollo.GraphQLOutputType)
+}
+public struct GraphQLBooleanCondition : Apollo.GraphQLSelection {
+  public init(variableName: Swift.String, inverted: Swift.Bool, selections: [any Apollo.GraphQLSelection])
+}
+public struct GraphQLTypeCondition : Apollo.GraphQLSelection {
+  public init(possibleTypes: [Swift.String], selections: [any Apollo.GraphQLSelection])
+}
+public struct GraphQLFragmentSpread : Apollo.GraphQLSelection {
+  public init(_ fragment: any Apollo.GraphQLFragment.Type)
+}
+public struct GraphQLTypeCase : Apollo.GraphQLSelection {
+  public init(variants: [Swift.String : [any Apollo.GraphQLSelection]], default: [any Apollo.GraphQLSelection])
+}
+open class HTTPRequest<Operation> where Operation : Apollo.GraphQLOperation {
+  open var graphQLEndpoint: Foundation.URL
+  open var operation: Operation
+  open var additionalHeaders: [Swift.String : Swift.String]
+  open var cachePolicy: Apollo.CachePolicy
+  final public let contextIdentifier: Foundation.UUID?
+  public init(graphQLEndpoint: Foundation.URL, operation: Operation, contextIdentifier: Foundation.UUID? = nil, contentType: Swift.String, clientName: Swift.String, clientVersion: Swift.String, additionalHeaders: [Swift.String : Swift.String], cachePolicy: Apollo.CachePolicy = .default)
+  open func addHeader(name: Swift.String, value: Swift.String)
+  open func updateContentType(to contentType: Swift.String)
+  open func toURLRequest() throws -> Foundation.URLRequest
+  @objc deinit
+}
+extension Apollo.HTTPRequest : Swift.Equatable {
+  public static func == (lhs: Apollo.HTTPRequest<Operation>, rhs: Apollo.HTTPRequest<Operation>) -> Swift.Bool
+}
+extension Apollo.HTTPRequest : Swift.CustomDebugStringConvertible {
+  public var debugDescription: Swift.String {
+    get
+  }
+}
+public class HTTPResponse<Operation> where Operation : Apollo.GraphQLOperation {
+  public var httpResponse: Foundation.HTTPURLResponse
+  public var rawData: Foundation.Data
+  public var parsedResponse: Apollo.GraphQLResult<Operation.Data>?
+  public var legacyResponse: Apollo.GraphQLResponse<Operation.Data>?
+  public init(response: Foundation.HTTPURLResponse, rawData: Foundation.Data, parsedResponse: Apollo.GraphQLResult<Operation.Data>?)
+  @objc deinit
+}
+extension Foundation.HTTPURLResponse : ApolloUtils.ApolloCompatible {
+  public typealias Base = Foundation.HTTPURLResponse
+}
+final public class InMemoryNormalizedCache : Apollo.NormalizedCache {
+  public init(records: Apollo.RecordSet = RecordSet())
+  final public func loadRecords(forKeys keys: Swift.Set<Apollo.CacheKey>) throws -> [Apollo.CacheKey : Apollo.Record]
+  final public func removeRecord(for key: Apollo.CacheKey) throws
+  final public func merge(records newRecords: Apollo.RecordSet) throws -> Swift.Set<Apollo.CacheKey>
+  final public func removeRecords(matching pattern: Apollo.CacheKey) throws
+  final public func clear()
+  @objc deinit
+}
+public protocol InterceptorProvider {
+  func interceptors<Operation>(for operation: Operation) -> [any Apollo.ApolloInterceptor] where Operation : Apollo.GraphQLOperation
+  func additionalErrorInterceptor<Operation>(for operation: Operation) -> (any Apollo.ApolloErrorInterceptor)? where Operation : Apollo.GraphQLOperation
+}
+extension Apollo.InterceptorProvider {
+  public func additionalErrorInterceptor<Operation>(for operation: Operation) -> (any Apollo.ApolloErrorInterceptor)? where Operation : Apollo.GraphQLOperation
+}
+public typealias JSONValue = Any
+public typealias JSONObject = [Swift.String : Any]
+public protocol JSONDecodable {
+  init(jsonValue value: Any) throws
+}
+public protocol JSONEncodable {
+  var jsonValue: Any { get }
+}
+public enum JSONDecodingError : Swift.Error, Foundation.LocalizedError {
+  case missingValue
+  case nullValue
+  case wrongType
+  case couldNotConvert(value: Any, to: any Any.Type)
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+public struct JSONValueMatcher {
+  public static func equals(_ lhs: Any, _ rhs: Any) -> Swift.Bool
+}
+open class JSONRequest<Operation> : Apollo.HTTPRequest<Operation> where Operation : Apollo.GraphQLOperation {
+  final public let requestBodyCreator: any Apollo.RequestBodyCreator
+  final public let autoPersistQueries: Swift.Bool
+  final public let useGETForQueries: Swift.Bool
+  final public let useGETForPersistedQueryRetry: Swift.Bool
+  public var isPersistedQueryRetry: Swift.Bool {
+    get
+    set
+  }
+  public var body: Apollo.GraphQLMap {
+    get
+  }
+  final public let serializationFormat: Apollo.JSONSerializationFormat.Type
+  public init(operation: Operation, graphQLEndpoint: Foundation.URL, contextIdentifier: Foundation.UUID? = nil, clientName: Swift.String, clientVersion: Swift.String, additionalHeaders: [Swift.String : Swift.String] = [:], cachePolicy: Apollo.CachePolicy = .default, autoPersistQueries: Swift.Bool = false, useGETForQueries: Swift.Bool = false, useGETForPersistedQueryRetry: Swift.Bool = false, requestBodyCreator: any Apollo.RequestBodyCreator = ApolloRequestBodyCreator())
+  open var sendOperationIdentifier: Swift.Bool {
+    get
+  }
+  override open func toURLRequest() throws -> Foundation.URLRequest
+  @objc deinit
+}
+public struct JSONResponseParsingInterceptor : Apollo.ApolloInterceptor {
+  public enum JSONResponseParsingError : Swift.Error, Foundation.LocalizedError {
+    case noResponseToParse
+    case couldNotParseToJSON(data: Foundation.Data)
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public let cacheKeyForObject: Apollo.CacheKeyForObject?
+  public init(cacheKeyForObject: Apollo.CacheKeyForObject? = nil)
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+@_hasMissingDesignatedInitializers final public class JSONSerializationFormat {
+  final public class func serialize(value: any Apollo.JSONEncodable) throws -> Foundation.Data
+  final public class func deserialize(data: Foundation.Data) throws -> Any
+  @objc deinit
+}
+extension Swift.String : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Int : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Float : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Double : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Bool : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.RawRepresentable where Self.RawValue : Apollo.JSONDecodable {
+  public init(jsonValue value: Any) throws
+}
+extension Swift.RawRepresentable where Self.RawValue : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Optional where Wrapped : Apollo.JSONDecodable {
+  public init(jsonValue value: Any) throws
+}
+extension Swift.Optional : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Foundation.NSDictionary : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Foundation.NSNull : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Swift.Dictionary : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+  public var jsonObject: Apollo.JSONObject {
+    get
+  }
+}
+extension Swift.Dictionary : Apollo.JSONDecodable {
+  public init(jsonValue value: Any) throws
+}
+extension Swift.Array : Apollo.JSONEncodable {
+  public var jsonValue: Any {
+    get
+  }
+}
+extension Foundation.URL : Apollo.JSONDecodable, Apollo.JSONEncodable {
+  public init(jsonValue value: Any) throws
+  public var jsonValue: Any {
+    get
+  }
+}
+public class MaxRetryInterceptor : Apollo.ApolloInterceptor {
+  public enum RetryError : Swift.Error, Foundation.LocalizedError {
+    case hitMaxRetryCount(count: Swift.Int, operationName: Swift.String)
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public init(maxRetriesAllowed: Swift.Int = 3)
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  @objc deinit
+}
+public class MultipartFormData {
+  final public let boundary: Swift.String
+  public init(boundary: Swift.String)
+  convenience public init()
+  public func appendPart(string: Swift.String, name: Swift.String) throws
+  public func appendPart(data: Foundation.Data, name: Swift.String, contentType: Swift.String? = nil, filename: Swift.String? = nil)
+  public func appendPart(inputStream: Foundation.InputStream, contentLength: Swift.UInt64, name: Swift.String, contentType: Swift.String? = nil, filename: Swift.String? = nil)
+  public func encode() throws -> Foundation.Data
+  @objc deinit
+}
+public class NetworkFetchInterceptor : Apollo.ApolloInterceptor, Apollo.Cancellable {
+  public init(client: Apollo.URLSessionClient)
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  public func cancel()
+  @objc deinit
+}
+public protocol NetworkTransport : AnyObject {
+  func send<Operation>(operation: Operation, cachePolicy: Apollo.CachePolicy, contextIdentifier: Foundation.UUID?, callbackQueue: Dispatch.DispatchQueue, completionHandler: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+  var clientName: Swift.String { get }
+  var clientVersion: Swift.String { get }
+}
+extension Apollo.NetworkTransport {
+  public static var headerFieldNameApolloClientName: Swift.String {
+    get
+  }
+  public static var headerFieldNameApolloClientVersion: Swift.String {
+    get
+  }
+  public static var defaultClientName: Swift.String {
+    get
+  }
+  public var clientName: Swift.String {
+    get
+  }
+  public static var defaultClientVersion: Swift.String {
+    get
+  }
+  public var clientVersion: Swift.String {
+    get
+  }
+  public func addApolloClientHeaders(to request: inout Foundation.URLRequest)
+}
+public protocol UploadingNetworkTransport : Apollo.NetworkTransport {
+  func upload<Operation>(operation: Operation, files: [Apollo.GraphQLFile], callbackQueue: Dispatch.DispatchQueue, completionHandler: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+}
+public protocol NormalizedCache {
+  func loadRecords(forKeys keys: Swift.Set<Apollo.CacheKey>) throws -> [Apollo.CacheKey : Apollo.Record]
+  func merge(records: Apollo.RecordSet) throws -> Swift.Set<Apollo.CacheKey>
+  func removeRecord(for key: Apollo.CacheKey) throws
+  func removeRecords(matching pattern: Apollo.CacheKey) throws
+  func clear() throws
+}
+public typealias CacheKey = Swift.String
+public struct Record {
+  public let key: Apollo.CacheKey
+  public typealias Value = Any
+  public typealias Fields = [Apollo.CacheKey : Any]
+  public var fields: Apollo.Record.Fields {
+    get
+  }
+  public init(key: Apollo.CacheKey, _ fields: Apollo.Record.Fields = [:])
+  public subscript(key: Apollo.CacheKey) -> Any? {
+    get
+    set
+  }
+}
+extension Apollo.Record : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+public struct RecordSet {
+  public var storage: [Apollo.CacheKey : Apollo.Record] {
+    get
+  }
+  public init<S>(records: S) where S : Swift.Sequence, S.Element == Apollo.Record
+  public mutating func insert(_ record: Apollo.Record)
+  public mutating func removeRecord(for key: Apollo.CacheKey)
+  public mutating func removeRecords(matching pattern: Apollo.CacheKey)
+  public mutating func clear()
+  public mutating func insert<S>(contentsOf records: S) where S : Swift.Sequence, S.Element == Apollo.Record
+  public subscript(key: Apollo.CacheKey) -> Apollo.Record? {
+    get
+  }
+  public var isEmpty: Swift.Bool {
+    get
+  }
+  public var keys: Swift.Set<Apollo.CacheKey> {
+    get
+  }
+  @discardableResult
+  public mutating func merge(records: Apollo.RecordSet) -> Swift.Set<Apollo.CacheKey>
+  @discardableResult
+  public mutating func merge(record: Apollo.Record) -> Swift.Set<Apollo.CacheKey>
+}
+extension Apollo.RecordSet : Swift.ExpressibleByDictionaryLiteral {
+  public init(dictionaryLiteral elements: (Apollo.CacheKey, Apollo.Record.Fields)...)
+  public typealias Key = Apollo.CacheKey
+  public typealias Value = Apollo.Record.Fields
+}
+extension Apollo.RecordSet : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension Apollo.RecordSet : Swift.CustomPlaygroundDisplayConvertible {
+  public var playgroundDescription: Any {
+    get
+  }
+}
+public protocol RequestBodyCreator {
+  func requestBody<Operation>(for operation: Operation, sendOperationIdentifiers: Swift.Bool, sendQueryDocument: Swift.Bool, autoPersistQuery: Swift.Bool) -> Apollo.GraphQLMap where Operation : Apollo.GraphQLOperation
+}
+extension Apollo.RequestBodyCreator {
+  public func requestBody<Operation>(for operation: Operation, sendOperationIdentifiers: Swift.Bool, sendQueryDocument: Swift.Bool, autoPersistQuery: Swift.Bool) -> Apollo.GraphQLMap where Operation : Apollo.GraphQLOperation
+}
+public struct ApolloRequestBodyCreator : Apollo.RequestBodyCreator {
+  public init()
+}
+public class RequestChain : Apollo.Cancellable {
+  public enum ChainError : Swift.Error, Foundation.LocalizedError {
+    case invalidIndex(chain: Apollo.RequestChain, index: Swift.Int)
+    case noInterceptors
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public var isNotCancelled: Swift.Bool {
+    get
+  }
+  public var additionalErrorHandler: (any Apollo.ApolloErrorInterceptor)?
+  public init(interceptors: [any Apollo.ApolloInterceptor], callbackQueue: Dispatch.DispatchQueue = .main)
+  public func kickoff<Operation>(request: Apollo.HTTPRequest<Operation>, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  public func proceedAsync<Operation>(request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  public func cancel()
+  public func retry<Operation>(request: Apollo.HTTPRequest<Operation>, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  public func handleErrorAsync<Operation>(_ error: any Swift.Error, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  public func returnValueAsync<Operation>(for request: Apollo.HTTPRequest<Operation>, value: Apollo.GraphQLResult<Operation.Data>, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+  @objc deinit
+}
+open class RequestChainNetworkTransport : Apollo.NetworkTransport {
+  final public let endpointURL: Foundation.URL
+  public var additionalHeaders: [Swift.String : Swift.String] {
+    get
+  }
+  final public let autoPersistQueries: Swift.Bool
+  final public let useGETForQueries: Swift.Bool
+  final public let useGETForPersistedQueryRetry: Swift.Bool
+  public var requestBodyCreator: any Apollo.RequestBodyCreator
+  public init(interceptorProvider: any Apollo.InterceptorProvider, endpointURL: Foundation.URL, additionalHeaders: [Swift.String : Swift.String] = [:], autoPersistQueries: Swift.Bool = false, requestBodyCreator: any Apollo.RequestBodyCreator = ApolloRequestBodyCreator(), useGETForQueries: Swift.Bool = false, useGETForPersistedQueryRetry: Swift.Bool = false)
+  open func constructRequest<Operation>(for operation: Operation, cachePolicy: Apollo.CachePolicy, contextIdentifier: Foundation.UUID? = nil) -> Apollo.HTTPRequest<Operation> where Operation : Apollo.GraphQLOperation
+  public var clientName: Swift.String
+  public var clientVersion: Swift.String
+  public func send<Operation>(operation: Operation, cachePolicy: Apollo.CachePolicy = .default, contextIdentifier: Foundation.UUID? = nil, callbackQueue: Dispatch.DispatchQueue = .main, completionHandler: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+  @objc deinit
+}
+extension Apollo.RequestChainNetworkTransport : Apollo.UploadingNetworkTransport {
+  open func constructUploadRequest<Operation>(for operation: Operation, with files: [Apollo.GraphQLFile], manualBoundary: Swift.String? = nil) -> Apollo.HTTPRequest<Operation> where Operation : Apollo.GraphQLOperation
+  public func upload<Operation>(operation: Operation, files: [Apollo.GraphQLFile], callbackQueue: Dispatch.DispatchQueue = .main, completionHandler: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) -> any Apollo.Cancellable where Operation : Apollo.GraphQLOperation
+}
+public struct ResponseCodeInterceptor : Apollo.ApolloInterceptor {
+  public enum ResponseCodeError : Swift.Error, Foundation.LocalizedError {
+    case invalidResponseCode(response: Foundation.HTTPURLResponse?, rawData: Foundation.Data?)
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public init()
+  public func interceptAsync<Operation>(chain: Apollo.RequestChain, request: Apollo.HTTPRequest<Operation>, response: Apollo.HTTPResponse<Operation>?, completion: @escaping (Swift.Result<Apollo.GraphQLResult<Operation.Data>, any Swift.Error>) -> Swift.Void) where Operation : Apollo.GraphQLOperation
+}
+@_hasMissingDesignatedInitializers public class TaskData {
+  final public let rawCompletion: Apollo.URLSessionClient.RawCompletion?
+  final public let completionBlock: Apollo.URLSessionClient.Completion
+  @objc deinit
+}
+@objc open class URLSessionClient : ObjectiveC.NSObject, Foundation.URLSessionDelegate, Foundation.URLSessionTaskDelegate, Foundation.URLSessionDataDelegate {
+  public enum URLSessionClientError : Swift.Error, Foundation.LocalizedError {
+    case noHTTPResponse(request: Foundation.URLRequest?)
+    case sessionBecameInvalidWithoutUnderlyingError
+    case dataForRequestNotFound(request: Foundation.URLRequest?)
+    case networkError(data: Foundation.Data, response: Foundation.HTTPURLResponse?, underlying: any Swift.Error)
+    case sessionInvalidated
+    public var errorDescription: Swift.String? {
+      get
+    }
+  }
+  public typealias RawCompletion = (Foundation.Data?, Foundation.HTTPURLResponse?, (any Swift.Error)?) -> Swift.Void
+  public typealias Completion = (Swift.Result<(Foundation.Data, Foundation.HTTPURLResponse), any Swift.Error>) -> Swift.Void
+  open var session: Foundation.URLSession! {
+    get
+  }
+  public init(sessionConfiguration: Foundation.URLSessionConfiguration = .default, callbackQueue: Foundation.OperationQueue? = .main)
+  public func invalidate()
+  open func clear(task identifier: Swift.Int)
+  open func clearAllTasks()
+  @discardableResult
+  open func sendRequest(_ request: Foundation.URLRequest, rawTaskCompletionHandler: Apollo.URLSessionClient.RawCompletion? = nil, completion: @escaping Apollo.URLSessionClient.Completion) -> Foundation.URLSessionTask
+  open func cancel(task: Foundation.URLSessionTask)
+  @objc open func urlSession(_ session: Foundation.URLSession, didBecomeInvalidWithError error: (any Swift.Error)?)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, didFinishCollecting metrics: Foundation.URLSessionTaskMetrics)
+  @objc open func urlSession(_ session: Foundation.URLSession, didReceive challenge: Foundation.URLAuthenticationChallenge, completionHandler: @escaping (Foundation.URLSession.AuthChallengeDisposition, Foundation.URLCredential?) -> Swift.Void)
+  @objc open func urlSessionDidFinishEvents(forBackgroundURLSession session: Foundation.URLSession)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, didReceive challenge: Foundation.URLAuthenticationChallenge, completionHandler: @escaping (Foundation.URLSession.AuthChallengeDisposition, Foundation.URLCredential?) -> Swift.Void)
+  @objc open func urlSession(_ session: Foundation.URLSession, taskIsWaitingForConnectivity task: Foundation.URLSessionTask)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, didCompleteWithError error: (any Swift.Error)?)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, needNewBodyStream completionHandler: @escaping (Foundation.InputStream?) -> Swift.Void)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, didSendBodyData bytesSent: Swift.Int64, totalBytesSent: Swift.Int64, totalBytesExpectedToSend: Swift.Int64)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, willBeginDelayedRequest request: Foundation.URLRequest, completionHandler: @escaping (Foundation.URLSession.DelayedRequestDisposition, Foundation.URLRequest?) -> Swift.Void)
+  @objc open func urlSession(_ session: Foundation.URLSession, task: Foundation.URLSessionTask, willPerformHTTPRedirection response: Foundation.HTTPURLResponse, newRequest request: Foundation.URLRequest, completionHandler: @escaping (Foundation.URLRequest?) -> Swift.Void)
+  @objc open func urlSession(_ session: Foundation.URLSession, dataTask: Foundation.URLSessionDataTask, didReceive data: Foundation.Data)
+  @objc open func urlSession(_ session: Foundation.URLSession, dataTask: Foundation.URLSessionDataTask, didBecome streamTask: Foundation.URLSessionStreamTask)
+  @objc open func urlSession(_ session: Foundation.URLSession, dataTask: Foundation.URLSessionDataTask, didBecome downloadTask: Foundation.URLSessionDownloadTask)
+  @objc open func urlSession(_ session: Foundation.URLSession, dataTask: Foundation.URLSessionDataTask, willCacheResponse proposedResponse: Foundation.CachedURLResponse, completionHandler: @escaping (Foundation.CachedURLResponse?) -> Swift.Void)
+  @objc open func urlSession(_ session: Foundation.URLSession, dataTask: Foundation.URLSessionDataTask, didReceive response: Foundation.URLResponse, completionHandler: @escaping (Foundation.URLSession.ResponseDisposition) -> Swift.Void)
+  @objc deinit
+}
+open class UploadRequest<Operation> : Apollo.HTTPRequest<Operation> where Operation : Apollo.GraphQLOperation {
+  final public let requestBodyCreator: any Apollo.RequestBodyCreator
+  final public let files: [Apollo.GraphQLFile]
+  final public let manualBoundary: Swift.String?
+  final public let serializationFormat: Apollo.JSONSerializationFormat.Type
+  public init(graphQLEndpoint: Foundation.URL, operation: Operation, clientName: Swift.String, clientVersion: Swift.String, additionalHeaders: [Swift.String : Swift.String] = [:], files: [Apollo.GraphQLFile], manualBoundary: Swift.String? = nil, requestBodyCreator: any Apollo.RequestBodyCreator = ApolloRequestBodyCreator())
+  override public func toURLRequest() throws -> Foundation.URLRequest
+  open func requestMultipartFormData() throws -> Apollo.MultipartFormData
+  @objc deinit
+}
+extension Apollo.CachePolicy : Swift.Equatable {}
+extension Apollo.CachePolicy : Swift.Hashable {}
+extension Apollo.ApolloClient.ApolloClientError : Swift.Equatable {}
+extension Apollo.ApolloClient.ApolloClientError : Swift.Hashable {}
+extension Apollo.CacheWriteInterceptor.CacheWriteError : Swift.Equatable {}
+extension Apollo.CacheWriteInterceptor.CacheWriteError : Swift.Hashable {}
+extension Apollo.GraphQLHTTPRequestError : Swift.Equatable {}
+extension Apollo.GraphQLHTTPRequestError : Swift.Hashable {}
+extension Apollo.GraphQLOperationType : Swift.Equatable {}
+extension Apollo.GraphQLOperationType : Swift.Hashable {}
+extension Apollo.GraphQLResult.Source : Swift.Equatable {}
+extension Apollo.GraphQLResult.Source : Swift.Hashable {}

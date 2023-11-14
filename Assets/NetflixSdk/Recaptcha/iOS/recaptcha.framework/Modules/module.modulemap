@@ -1,0 +1,17 @@
+framework module recaptcha {
+  umbrella header "recaptcha.h"
+  export *
+  module * { export * }
+  link "c++"
+  link "z"
+  link framework "CoreFoundation"
+  link framework "CoreTelephony"
+  link framework "Foundation"
+  link framework "GLKit"
+  link framework "JavaScriptCore"
+  link framework "OpenGLES"
+  link framework "QuartzCore"
+  link framework "Security"
+  link framework "SystemConfiguration"
+  link framework "UIKit"
+}

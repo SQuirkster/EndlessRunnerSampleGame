@@ -1,0 +1,66 @@
+query NGPListAchievements {
+  ngpAchievements {
+    ...NGPAchievementData
+  }
+}
+
+mutation NGPUnlockAchievement($input: [NGPAchievement_UnlockInput!]!) {
+ ngpAchievement_unlock(input: $input) {
+    ... on NGPAchievement_UnlockSuccess {
+        achievementName
+        idempotentKey
+        unlockedAt
+    }
+    
+    ... on NGPAchievement_UnknownAchievementError {
+        achievementName
+        message
+    }
+    
+    ... on NGPAchievement_ArchivedAchievementError {
+        achievementName
+        message
+    }
+ }
+}
+
+mutation NGPMarkReadAchievement($input: [NGPAchievement_MarkAsReadInput!]!) {
+ ngpAchievement_unlockedMarkAsRead(input: $input) {
+    ... on NGPAchievement_MarkAsReadSuccess {
+        achievementName
+        idempotentKey
+        readAt
+    }
+    
+    ... on NGPAchievement_UnknownAchievementError {
+        achievementName
+        message
+    }
+    
+    ... on NGPAchievement_AchievementLockedError {
+        achievementName
+        message
+    }
+ }
+}
+
+fragment NGPAchievementData on NGPAchievement {
+    name
+    definition {
+        title
+        lockedDescription
+        lockedIconUrl
+        unlockedDescription
+        unlockedIconUrl
+        createdAt
+    }
+    status {
+      ... on  NGPAchievement_Unlocked {
+        unlockedAt
+        markedReadAt
+       }
+    ... on  NGPAchievement_Locked {
+        isHidden
+       }
+    }
+}

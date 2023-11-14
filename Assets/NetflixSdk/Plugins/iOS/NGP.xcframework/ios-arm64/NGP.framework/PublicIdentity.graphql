@@ -1,0 +1,85 @@
+# Fragments
+
+fragment PublicID on PublicIdentity {
+  handle {
+    fullHandle
+  }
+}
+
+fragment PublicIDConfig on UPIConfiguration {
+    handleConfiguration {
+        ... on UPIHandleConfiguration {
+            isHandleRequired
+            handleMinLength
+            handleMaxLength
+            handlePattern
+        }
+    }
+}
+
+# Queries
+
+query CheckHandleAvailability($handle: String!) {
+  upiHandleAvailability(handle: $handle) {
+    ... on UPIHandleAvailable {
+      available: localizedDescription {
+        value
+      }
+    }
+    ... on UPIHandleUnavailableError {
+      unavailable: localizedDescription {
+        value
+      }
+    }
+  }
+}
+
+query PublicIdentities($userIds: [ID!]!) {
+    ngpPublicUsers(userIds: $userIds) {
+        __typename
+        ... on NGPPublicUser {
+            id
+            publicIdentity {
+                __typename
+                handle {
+                    fullHandle
+                }
+            }
+        }
+        ... on NGPPublicUserNotFoundError {
+            __typename
+            userId
+        }
+        ... on NGPPublicUserLookupError {
+            __typename
+            userId
+        }
+    }
+}
+
+# Mutations
+
+mutation ClaimPublicIdentity($handle: String!) {
+  upiSetHandle(handle: $handle) {
+    ... on UPIHandleModerationError {
+      alert {
+        ...alertFields
+      }
+    }
+    ... on UPIHandleUnavailableError {
+      alert {
+        ...alertFields
+      }
+    }
+    ... on UPIHandleValidationError {
+      alert {
+        ...alertFields
+      }
+    }
+    ... on UPISetHandleSuccess {
+      handle {
+        fullHandle
+      }
+    }
+  }
+}

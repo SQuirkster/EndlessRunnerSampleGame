@@ -1,0 +1,81 @@
+query ProgressSlot($slotid: ID!) {
+  ngpProgress_slot(slotClientId: $slotid) {
+    __typename
+    ... on NGPProgress_Slot {
+      slotClientId
+      currentSnapshot {
+        id
+        createTimestamp
+        directDownload {
+          base64Data
+        }
+      }
+    }
+    ... on NGPProgress_ValidationError {
+      description
+    }
+  }
+}
+
+mutation SaveSlot($slotid: ID!, $snapshotid: ID, $b64data: String!) {
+  ngpProgress_saveSlot(
+    data: {
+      slotClientId: $slotid
+      currentSnapshotId: $snapshotid
+      data: { base64Data: $b64data }
+    }
+  ) {
+    __typename
+    ... on NGPProgress_SaveSlotSuccess {
+      slot {
+        slotClientId
+        currentSnapshot {
+          id
+          createTimestamp
+        }
+      }
+    }
+    ... on NGPProgress_SlotConflictError {
+      currentSnapshot {
+        id
+        createTimestamp
+        directDownload {
+          base64Data
+        }
+      }
+    }
+    ... on NGPProgress_ValidationError {
+      description
+    }
+  }
+}
+
+mutation DeleteSlot($slotid: ID!, $snapshotid: ID) {
+  ngpProgress_deleteSlot(
+    data: { slotClientId: $slotid, currentSnapshotId: $snapshotid }
+  ) {
+    __typename
+    ... on NGPProgress_SlotConflictError {
+      currentSnapshot {
+        id
+        createTimestamp
+        directDownload {
+          base64Data
+        }
+      }
+    }
+    ... on NGPProgress_ValidationError {
+      description
+    }
+  }
+}
+
+query ProgressSlots {
+  ngpProgress_slots {
+    slotClientId
+    currentSnapshot {
+      id
+      createTimestamp
+    }
+  }
+}

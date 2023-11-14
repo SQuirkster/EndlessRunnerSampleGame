@@ -1,0 +1,8 @@
+# This is provided as an example and a placeholder,
+# and can be deleted once other queries are created
+query GatewayRequest {
+  gatewayRequestDetails {
+    edgarLink
+    requestId
+  }
+}

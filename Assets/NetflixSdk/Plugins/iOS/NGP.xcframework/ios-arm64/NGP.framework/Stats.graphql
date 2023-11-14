@@ -1,0 +1,186 @@
+mutation NGPSubmitStat($statValue: NGPStat_SubmitStatValueInput!) {
+    ngpStat_submitStatValue(data: $statValue) {
+        ...statSubmitOutcome
+    }
+}
+
+mutation SubmitStatsBatch ($statsArray: [NGPStat_SubmitStatValueInput!]!) {
+    ngpStat_submitStatValues(data: $statsArray) {
+        ...statSubmitOutcome
+    }
+}
+
+fragment statSubmitOutcome on NGPStat_SubmitStatValueOutcome {
+    __typename
+    ...on NGPStat_SubmitStatValueSuccess {
+        statDefinitionName,
+        statValue,
+        aggregatedStatValue,
+        idempotentKey
+    }
+    ...on NGPStat_UnknownStatDefinitionError {
+        __typename
+    }
+    ...on NGPStat_ArchivedStatDefinitionError {
+        __typename
+    }
+}
+
+query NGPStatAggregatedValue($statDefinitionName: ID!) {
+    ngpStat_aggregatedStatValue(statDefinitionName: $statDefinitionName) {
+        ...statValueOutcome
+    }
+}
+
+fragment statValueOutcome on NGPStat_StatValueOutcome {
+    __typename
+    ...on NGPStat_StatValueSuccess {
+        statDefinitionName,
+        aggregatedStatValue
+    }
+    ...on NGPStat_UnknownStatDefinitionError {
+        __typename
+    }
+    ...on NGPStat_StatValueNotFoundError {
+        __typename
+        localizedString {
+            key
+            value(locale: "en-us")
+        }
+    }
+}
+
+query NGPLeaderboardTopEntries($leaderboardName: ID!, $numberOfEntries: Int) {
+    ngpLeaderboard(leaderboardName: $leaderboardName) {
+        ... on NGPLeaderboard_NotFoundError {
+            ... NGPLeaderboardNotFoundError
+        }
+        ... on NGPLeaderboard {
+          __typename
+          name
+          topEntries(first: $numberOfEntries) {
+            ... NGPLeaderboardEntriesConnectionData
+          }
+        }
+  }
+}
+
+query NGPLeaderboardMoreEntries($leaderboardName: ID!, $numberOfEntriesAfterCursor: Int, $numberOfEntriesBeforeCursor: Int, $beforeCursor: String, $afterCursor: String) {
+    ngpLeaderboard(leaderboardName: $leaderboardName) {
+        ... on NGPLeaderboard_NotFoundError {
+            ... NGPLeaderboardNotFoundError
+        }
+        ... on NGPLeaderboard {
+          __typename
+          name
+          moreEntries(first: $numberOfEntriesAfterCursor, last: $numberOfEntriesBeforeCursor, before: $beforeCursor, after: $afterCursor) {
+            ... NGPLeaderboardEntriesConnectionData
+          }
+        }
+    }
+}
+
+query NGPLeaderboardPlayerCentricEntries($leaderboardName: ID!, $numberOfEntries: Int) {
+    ngpLeaderboard(leaderboardName: $leaderboardName) {
+        ... on NGPLeaderboard_NotFoundError {
+            ... NGPLeaderboardNotFoundError
+        }
+        ... on NGPLeaderboard {
+          __typename
+          name
+          playerCentricEntries(maxEntries: $numberOfEntries) {
+            ... on NGPLeaderboard_EntryNotFoundError {
+                ... NGPEntryNotFoundError
+            }
+            ... on NGPLeaderboard_EntriesConnection {
+                ... NGPLeaderboardEntriesConnectionData
+            }
+          }
+        }
+  }
+}
+
+query NGPLeaderboardCurrentPlayerEntry($leaderboardName: ID!) {
+    ngpLeaderboard(leaderboardName: $leaderboardName) {
+        ... on NGPLeaderboard_NotFoundError {
+            ... NGPLeaderboardNotFoundError
+        }
+        ... on NGPLeaderboard {
+          __typename
+          name
+
+          currentPlayerEntry {
+            ... on NGPLeaderboard_EntryNotFoundError {
+                ... NGPEntryNotFoundError
+            }
+            ... on NGPLeaderboard_Entry {
+                ... NGPLeaderboardPlayerEntryData
+            }
+          }
+        }
+  }
+}
+
+query NGPLeaderboardInfo($leaderboardName: ID!) {
+    ngpLeaderboard(leaderboardName: $leaderboardName) {
+        ... on NGPLeaderboard_NotFoundError {
+           ... NGPLeaderboardNotFoundError
+        }
+        ... on NGPLeaderboard {
+          name
+          totalPlayerEntries
+        }
+    }
+}
+
+fragment NGPLeaderboardEntriesConnectionData on NGPLeaderboard_EntriesConnection {
+    edges {
+        cursor
+        node {
+            ... NGPLeaderboardPlayerEntryData
+          }
+        }
+    pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+    }
+}
+
+fragment NGPLeaderboardNotFoundOutcome on NGPLeaderboard_Outcome {
+    ... on NGPLeaderboard_NotFoundError {
+        ... NGPLeaderboardNotFoundError
+    }
+}
+
+fragment NGPLeaderboardNotFoundError on NGPLeaderboard_NotFoundError {
+    __typename
+    localizedString{
+        key
+        value(locale: "en-us")
+    }
+}
+
+fragment NGPEntryNotFoundError on NGPLeaderboard_EntryNotFoundError {
+    __typename
+    localizedString{
+        key
+        value(locale: "en-us")
+    }
+}
+
+fragment NGPLeaderboardPlayerEntryData on NGPLeaderboard_Entry {
+    rank
+    position
+    statValue
+    player {
+      id
+      _id
+      publicIdentity {
+        handle {
+          fullHandle
+        }
+      }
+    }
+}
