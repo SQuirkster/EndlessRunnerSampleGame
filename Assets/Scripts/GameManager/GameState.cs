@@ -116,6 +116,8 @@ public class GameState : AState
 
     public void StartGame()
     {
+        Netflix.NetflixSdk.CheckUserAuth(); 
+        
         canvas.gameObject.SetActive(true);
         pauseMenu.gameObject.SetActive(false);
         wholeUI.gameObject.SetActive(true);
